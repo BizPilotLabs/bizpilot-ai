@@ -1,0 +1,1 @@
+export { projectRoutes } from "./project.routes.js";

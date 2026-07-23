@@ -14,6 +14,14 @@ enum OrganizationPlan {
   ENTERPRISE
 }
 
+enum ProjectStatus {
+  PLANNED
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
 enum UserStatus {
   INVITED
   ACTIVE
@@ -40,6 +48,7 @@ model Organization {
   auditLogs     AuditLog[]
   refreshTokens RefreshToken[]
   loginHistory  LoginHistory[]
+  projects      Project[]
 
   @@index([plan])
   @@index([country])
@@ -76,6 +85,7 @@ model User {
   verificationTokens  VerificationToken[]
   passwordResetTokens PasswordResetToken[]
   loginHistory        LoginHistory[]
+  createdProjects     Project[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -306,4 +316,32 @@ model LoginHistory {
   @@index([createdAt])
   @@index([ipAddress])
   @@map("login_history")
+}
+
+model Project {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String        @db.Uuid
+  name           String        @db.VarChar(160)
+  description    String?       @db.Text
+  status         ProjectStatus @default(PLANNED)
+  startDate      DateTime?
+  endDate        DateTime?
+  color          String?       @db.VarChar(32)
+  archived       Boolean       @default(false)
+  createdById    String        @db.Uuid
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deletedAt      DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdBy    User         @relation(fields: [createdById], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([createdById])
+  @@index([status])
+  @@index([archived])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@map("projects")
 }
