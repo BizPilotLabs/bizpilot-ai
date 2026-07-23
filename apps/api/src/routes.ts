@@ -1,5 +1,7 @@
 import { Router, type Router as ExpressRouter } from "express";
 
+import { authRoutes } from "./modules/auth/index.js";
+
 export const routes: ExpressRouter = Router();
 
 routes.get("/health", (_request, response) => {
@@ -8,3 +10,5 @@ routes.get("/health", (_request, response) => {
     status: "ok",
   });
 });
+
+routes.use("/auth", authRoutes);
