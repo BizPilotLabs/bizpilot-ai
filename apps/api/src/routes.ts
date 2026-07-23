@@ -4,6 +4,7 @@ import { authRoutes } from "./modules/auth/index.js";
 import { organizationRoutes } from "./modules/organizations/index.js";
 import { projectRoutes } from "./modules/projects/index.js";
 import { permissionRoutes, roleRoutes, userRoleRoutes } from "./modules/rbac/index.js";
+import { taskRoutes } from "./modules/tasks/index.js";
 import { userRoutes } from "./modules/users/index.js";
 
 export const routes: ExpressRouter = Router();
@@ -20,5 +21,6 @@ routes.use("/organizations", organizationRoutes);
 routes.use("/roles", roleRoutes);
 routes.use("/permissions", permissionRoutes);
 routes.use("/projects", projectRoutes);
+routes.use("/tasks", taskRoutes);
 routes.use("/users", userRoleRoutes);
 routes.use("/users", userRoutes);

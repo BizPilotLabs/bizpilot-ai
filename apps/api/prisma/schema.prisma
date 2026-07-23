@@ -22,6 +22,21 @@ enum ProjectStatus {
   CANCELLED
 }
 
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 enum UserStatus {
   INVITED
   ACTIVE
@@ -86,6 +101,8 @@ model User {
   passwordResetTokens PasswordResetToken[]
   loginHistory        LoginHistory[]
   createdProjects     Project[]
+  createdTasks        Task[]               @relation("TaskCreator")
+  assignedTasks       Task[]               @relation("TaskAssignee")
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -335,6 +352,7 @@ model Project {
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   createdBy    User         @relation(fields: [createdById], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  tasks        Task[]
 
   @@unique([organizationId, name])
   @@index([organizationId])
@@ -344,4 +362,37 @@ model Project {
   @@index([createdAt])
   @@index([deletedAt])
   @@map("projects")
+}
+
+model Task {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId      String       @db.Uuid
+  title          String       @db.VarChar(200)
+  description    String?      @db.Text
+  status         TaskStatus   @default(TODO)
+  priority       TaskPriority @default(MEDIUM)
+  dueDate        DateTime?
+  assigneeId     String?      @db.Uuid
+  createdById    String       @db.Uuid
+  estimatedHours Decimal?     @db.Decimal(8, 2)
+  actualHours    Decimal?     @db.Decimal(8, 2)
+  archived       Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  assignee  User?   @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  createdBy User    @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([createdById])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([archived])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@map("tasks")
 }
