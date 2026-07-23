@@ -1,0 +1,13 @@
+{
+  "name": "@bizpilot-ai/types",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "types": "./index.ts",
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "default": "./index.ts"
+    }
+  }
+}
