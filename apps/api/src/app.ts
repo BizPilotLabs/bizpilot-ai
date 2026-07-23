@@ -5,6 +5,7 @@ import helmet from "helmet";
 
 import { config } from "./config/index.js";
 import { errorHandler, notFoundHandler, requestLogger } from "./core/middleware/index.js";
+import { setupSwaggerDocs } from "./docs/swagger.js";
 import { routes } from "./routes.js";
 
 export const createApp = (): Express => {
@@ -25,6 +26,7 @@ export const createApp = (): Express => {
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
+  setupSwaggerDocs(app);
   app.use(routes);
   app.use(notFoundHandler);
   app.use(errorHandler);

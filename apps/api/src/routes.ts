@@ -1,5 +1,7 @@
 import { Router, type Router as ExpressRouter } from "express";
 
+import { activityRoutes } from "./modules/activities/index.js";
+import { attachmentRoutes } from "./modules/attachments/index.js";
 import { authRoutes } from "./modules/auth/index.js";
 import { commentRoutes } from "./modules/comments/index.js";
 import { organizationRoutes } from "./modules/organizations/index.js";
@@ -19,7 +21,9 @@ routes.get("/health", (_request, response) => {
 });
 
 routes.use("/auth", authRoutes);
+routes.use("/activities", activityRoutes);
 routes.use("/", commentRoutes);
+routes.use("/", attachmentRoutes);
 routes.use("/organizations", organizationRoutes);
 routes.use("/roles", roleRoutes);
 routes.use("/permissions", permissionRoutes);

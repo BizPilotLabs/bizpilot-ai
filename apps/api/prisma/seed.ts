@@ -107,7 +107,36 @@ const permissions = [
     resource: "comments",
     action: "delete",
     description: "Delete owned comments or moderate comments with elevated access.",
-  },] as const;
+  },
+  {
+    key: "attachments.read",
+    name: "Read attachments",
+    resource: "attachments",
+    action: "read",
+    description: "View task attachment metadata within an organization.",
+  },
+  {
+    key: "attachments.create",
+    name: "Create attachments",
+    resource: "attachments",
+    action: "create",
+    description: "Upload task attachment metadata within an organization.",
+  },
+  {
+    key: "attachments.delete",
+    name: "Delete attachments",
+    resource: "attachments",
+    action: "delete",
+    description: "Delete task attachments within an organization.",
+  },
+  {
+    key: "activities.read",
+    name: "Read activities",
+    resource: "activities",
+    action: "read",
+    description: "View organization activity feed records.",
+  },
+] as const;
 
 const seed = async (): Promise<void> => {
   await prisma.$transaction(

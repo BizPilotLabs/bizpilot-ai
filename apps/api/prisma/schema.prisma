@@ -66,6 +66,7 @@ model Organization {
   projects      Project[]
   teams         Team[]
   comments      Comment[]
+  attachments   Attachment[]
 
   @@index([plan])
   @@index([country])
@@ -108,6 +109,7 @@ model User {
   ledTeams            Team[]               @relation("TeamLead")
   teamMemberships     TeamMember[]
   comments            Comment[]
+  attachments         Attachment[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -386,10 +388,11 @@ model Task {
   updatedAt      DateTime     @updatedAt
   deletedAt      DateTime?
 
-  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  assignee  User?     @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  createdBy User      @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  comments  Comment[]
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  assignee    User?        @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  createdBy   User         @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  comments    Comment[]
+  attachments Attachment[]
 
   @@index([projectId])
   @@index([assigneeId])
@@ -465,4 +468,29 @@ model Comment {
   @@index([createdAt])
   @@index([deletedAt])
   @@map("comments")
+}
+
+model Attachment {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String    @db.Uuid
+  taskId         String    @db.Uuid
+  uploadedBy     String    @db.Uuid
+  originalName   String    @db.VarChar(255)
+  storedName     String    @db.VarChar(255)
+  mimeType       String    @db.VarChar(120)
+  fileSize       Int
+  storagePath    String    @db.VarChar(2048)
+  createdAt      DateTime  @default(now())
+  deletedAt      DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  task         Task         @relation(fields: [taskId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  uploader     User         @relation(fields: [uploadedBy], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([organizationId])
+  @@index([taskId])
+  @@index([uploadedBy])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@map("attachments")
 }

@@ -1,0 +1,1 @@
+export { activityRoutes } from "./activity.routes.js";
