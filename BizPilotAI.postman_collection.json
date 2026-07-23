@@ -1,505 +1,3200 @@
 {
-    "info":  {
-                 "name":  "BizPilot AI Backend",
-                 "description":  "Postman collection for the BizPilot AI backend API.",
-                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-             },
-    "item":  [
-                 {
-                     "name":  "Health",
-                     "item":  [
-                                  {
-                                      "name":  "GET /health",
-                                      "request":  {
-                                                      "method":  "GET",
-                                                      "header":  [
-
-                                                                 ],
-                                                      "url":  {
-                                                                  "raw":  "{{baseUrl}}/health",
-                                                                  "host":  [
-                                                                               "{{baseUrl}}"
-                                                                           ],
-                                                                  "path":  [
-                                                                               "health"
-                                                                           ]
-                                                              }
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  }
-                              ]
-                 },
-                 {
-                     "name":  "Authentication",
-                     "item":  [
-                                  {
-                                      "name":  "POST /auth/register",
-                                      "event":  [
-                                                    {
-                                                        "listen":  "test",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "pm.test(\"Response is successful\", function () {",
-                                                                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                                                                                    "});",
-                                                                                    "",
-                                                                                    "const json = pm.response.json();",
-                                                                                    "",
-                                                                                    "if (json \u0026\u0026 json.success === true \u0026\u0026 json.data) {",
-                                                                                    "  if (json.data.accessToken) {",
-                                                                                    "    pm.collectionVariables.set(\"accessToken\", json.data.accessToken);",
-                                                                                    "  }",
-                                                                                    "",
-                                                                                    "  if (json.data.user \u0026\u0026 json.data.user.id) {",
-                                                                                    "    pm.collectionVariables.set(\"userId\", json.data.user.id);",
-                                                                                    "  }",
-                                                                                    "",
-                                                                                    "  if (json.data.organization \u0026\u0026 json.data.organization.id) {",
-                                                                                    "    pm.collectionVariables.set(\"organizationId\", json.data.organization.id);",
-                                                                                    "  }",
-                                                                                    "}"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ],
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json",
-                                                                         "type":  "text"
-                                                                     }
-                                                                 ],
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"organizationName\": \"Acme Growth Labs\",\n  \"organizationSlug\": \"acme-growth-labs\",\n  \"firstName\": \"Avery\",\n  \"lastName\": \"Stone\",\n  \"email\": \"avery.stone@acmegrowthlabs.com\",\n  \"password\": \"SecurePassword123!\",\n  \"timezone\": \"America/New_York\",\n  \"country\": \"US\",\n  \"currency\": \"USD\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               },
-                                                      "url":  {
-                                                                  "raw":  "{{baseUrl}}/auth/register",
-                                                                  "host":  [
-                                                                               "{{baseUrl}}"
-                                                                           ],
-                                                                  "path":  [
-                                                                               "auth",
-                                                                               "register"
-                                                                           ]
-                                                              }
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "POST /auth/login",
-                                      "event":  [
-                                                    {
-                                                        "listen":  "test",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "pm.test(\"Response is successful\", function () {",
-                                                                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                                                                                    "});",
-                                                                                    "",
-                                                                                    "const json = pm.response.json();",
-                                                                                    "",
-                                                                                    "if (json \u0026\u0026 json.success === true \u0026\u0026 json.data) {",
-                                                                                    "  if (json.data.accessToken) {",
-                                                                                    "    pm.collectionVariables.set(\"accessToken\", json.data.accessToken);",
-                                                                                    "  }",
-                                                                                    "",
-                                                                                    "  if (json.data.user \u0026\u0026 json.data.user.id) {",
-                                                                                    "    pm.collectionVariables.set(\"userId\", json.data.user.id);",
-                                                                                    "  }",
-                                                                                    "",
-                                                                                    "  if (json.data.organization \u0026\u0026 json.data.organization.id) {",
-                                                                                    "    pm.collectionVariables.set(\"organizationId\", json.data.organization.id);",
-                                                                                    "  }",
-                                                                                    "}"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ],
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json",
-                                                                         "type":  "text"
-                                                                     }
-                                                                 ],
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"email\": \"avery.stone@acmegrowthlabs.com\",\n  \"password\": \"SecurePassword123!\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               },
-                                                      "url":  {
-                                                                  "raw":  "{{baseUrl}}/auth/login",
-                                                                  "host":  [
-                                                                               "{{baseUrl}}"
-                                                                           ],
-                                                                  "path":  [
-                                                                               "auth",
-                                                                               "login"
-                                                                           ]
-                                                              }
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "POST /auth/logout",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "auth":  {
-                                                                   "type":  "bearer",
-                                                                   "bearer":  [
-                                                                                  {
-                                                                                      "key":  "token",
-                                                                                      "value":  "{{accessToken}}",
-                                                                                      "type":  "string"
-                                                                                  }
-                                                                              ]
-                                                               },
-                                                      "header":  [
-
-                                                                 ],
-                                                      "url":  {
-                                                                  "raw":  "{{baseUrl}}/auth/logout",
-                                                                  "host":  [
-                                                                               "{{baseUrl}}"
-                                                                           ],
-                                                                  "path":  [
-                                                                               "auth",
-                                                                               "logout"
-                                                                           ]
-                                                              }
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "POST /auth/refresh",
-                                      "event":  [
-                                                    {
-                                                        "listen":  "test",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "pm.test(\"Response is successful\", function () {",
-                                                                                    "  pm.expect(pm.response.code).to.equal(200);",
-                                                                                    "});",
-                                                                                    "",
-                                                                                    "const json = pm.response.json();",
-                                                                                    "",
-                                                                                    "if (json \u0026\u0026 json.success === true \u0026\u0026 json.data \u0026\u0026 json.data.accessToken) {",
-                                                                                    "  pm.collectionVariables.set(\"accessToken\", json.data.accessToken);",
-                                                                                    "}"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ],
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-
-                                                                 ],
-                                                      "url":  {
-                                                                  "raw":  "{{baseUrl}}/auth/refresh",
-                                                                  "host":  [
-                                                                               "{{baseUrl}}"
-                                                                           ],
-                                                                  "path":  [
-                                                                               "auth",
-                                                                               "refresh"
-                                                                           ]
-                                                              }
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "GET /auth/me",
-                                      "event":  [
-                                                    {
-                                                        "listen":  "test",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "pm.test(\"Response is successful\", function () {",
-                                                                                    "  pm.expect(pm.response.code).to.equal(200);",
-                                                                                    "});",
-                                                                                    "",
-                                                                                    "const json = pm.response.json();",
-                                                                                    "",
-                                                                                    "if (json \u0026\u0026 json.success === true \u0026\u0026 json.data) {",
-                                                                                    "  if (json.data.user \u0026\u0026 json.data.user.id) {",
-                                                                                    "    pm.collectionVariables.set(\"userId\", json.data.user.id);",
-                                                                                    "  }",
-                                                                                    "",
-                                                                                    "  if (json.data.organization \u0026\u0026 json.data.organization.id) {",
-                                                                                    "    pm.collectionVariables.set(\"organizationId\", json.data.organization.id);",
-                                                                                    "  }",
-                                                                                    "}"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ],
-                                      "request":  {
-                                                      "method":  "GET",
-                                                      "auth":  {
-                                                                   "type":  "bearer",
-                                                                   "bearer":  [
-                                                                                  {
-                                                                                      "key":  "token",
-                                                                                      "value":  "{{accessToken}}",
-                                                                                      "type":  "string"
-                                                                                  }
-                                                                              ]
-                                                               },
-                                                      "header":  [
-
-                                                                 ],
-                                                      "url":  {
-                                                                  "raw":  "{{baseUrl}}/auth/me",
-                                                                  "host":  [
-                                                                               "{{baseUrl}}"
-                                                                           ],
-                                                                  "path":  [
-                                                                               "auth",
-                                                                               "me"
-                                                                           ]
-                                                              }
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  }
-                              ]
-                 },
-                 {
-                     "name":  "Organizations",
-                     "item":  [
-                                  {
-                                      "name":  "GET /organizations/me",
-                                      "event":  [
-                                                    {
-                                                        "listen":  "test",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "pm.test(\"Response is successful\", function () {",
-                                                                                    "  pm.expect(pm.response.code).to.equal(200);",
-                                                                                    "});",
-                                                                                    "",
-                                                                                    "const json = pm.response.json();",
-                                                                                    "",
-                                                                                    "if (json \u0026\u0026 json.success === true \u0026\u0026 json.data \u0026\u0026 json.data.organization \u0026\u0026 json.data.organization.id) {",
-                                                                                    "  pm.collectionVariables.set(\"organizationId\", json.data.organization.id);",
-                                                                                    "}"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ],
-                                      "request":  {
-                                                      "method":  "GET",
-                                                      "auth":  {
-                                                                   "type":  "bearer",
-                                                                   "bearer":  [
-                                                                                  {
-                                                                                      "key":  "token",
-                                                                                      "value":  "{{accessToken}}",
-                                                                                      "type":  "string"
-                                                                                  }
-                                                                              ]
-                                                               },
-                                                      "header":  [
-
-                                                                 ],
-                                                      "url":  {
-                                                                  "raw":  "{{baseUrl}}/organizations/me",
-                                                                  "host":  [
-                                                                               "{{baseUrl}}"
-                                                                           ],
-                                                                  "path":  [
-                                                                               "organizations",
-                                                                               "me"
-                                                                           ]
-                                                              }
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "PUT /organizations/me",
-                                      "event":  [
-                                                    {
-                                                        "listen":  "test",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "pm.test(\"Response is successful\", function () {",
-                                                                                    "  pm.expect(pm.response.code).to.equal(200);",
-                                                                                    "});",
-                                                                                    "",
-                                                                                    "const json = pm.response.json();",
-                                                                                    "",
-                                                                                    "if (json \u0026\u0026 json.success === true \u0026\u0026 json.data \u0026\u0026 json.data.organization \u0026\u0026 json.data.organization.id) {",
-                                                                                    "  pm.collectionVariables.set(\"organizationId\", json.data.organization.id);",
-                                                                                    "}"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ],
-                                      "request":  {
-                                                      "method":  "PUT",
-                                                      "auth":  {
-                                                                   "type":  "bearer",
-                                                                   "bearer":  [
-                                                                                  {
-                                                                                      "key":  "token",
-                                                                                      "value":  "{{accessToken}}",
-                                                                                      "type":  "string"
-                                                                                  }
-                                                                              ]
-                                                               },
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json",
-                                                                         "type":  "text"
-                                                                     }
-                                                                 ],
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"name\": \"Acme Growth Labs\",\n  \"logo\": \"https://example.com/assets/acme-logo.png\",\n  \"timezone\": \"America/New_York\",\n  \"country\": \"US\",\n  \"currency\": \"USD\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               },
-                                                      "url":  {
-                                                                  "raw":  "{{baseUrl}}/organizations/me",
-                                                                  "host":  [
-                                                                               "{{baseUrl}}"
-                                                                           ],
-                                                                  "path":  [
-                                                                               "organizations",
-                                                                               "me"
-                                                                           ]
-                                                              }
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "PATCH /organizations/me/settings",
-                                      "event":  [
-                                                    {
-                                                        "listen":  "test",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "pm.test(\"Response is successful\", function () {",
-                                                                                    "  pm.expect(pm.response.code).to.equal(200);",
-                                                                                    "});",
-                                                                                    "",
-                                                                                    "const json = pm.response.json();",
-                                                                                    "",
-                                                                                    "if (json \u0026\u0026 json.success === true \u0026\u0026 json.data \u0026\u0026 json.data.organization \u0026\u0026 json.data.organization.id) {",
-                                                                                    "  pm.collectionVariables.set(\"organizationId\", json.data.organization.id);",
-                                                                                    "}"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ],
-                                      "request":  {
-                                                      "method":  "PATCH",
-                                                      "auth":  {
-                                                                   "type":  "bearer",
-                                                                   "bearer":  [
-                                                                                  {
-                                                                                      "key":  "token",
-                                                                                      "value":  "{{accessToken}}",
-                                                                                      "type":  "string"
-                                                                                  }
-                                                                              ]
-                                                               },
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json",
-                                                                         "type":  "text"
-                                                                     }
-                                                                 ],
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"timezone\": \"America/New_York\",\n  \"currency\": \"USD\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               },
-                                                      "url":  {
-                                                                  "raw":  "{{baseUrl}}/organizations/me/settings",
-                                                                  "host":  [
-                                                                               "{{baseUrl}}"
-                                                                           ],
-                                                                  "path":  [
-                                                                               "organizations",
-                                                                               "me",
-                                                                               "settings"
-                                                                           ]
-                                                              }
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  }
-                              ]
-                 }
-             ],
-    "variable":  [
-                     {
-                         "key":  "baseUrl",
-                         "value":  "http://localhost:4000",
-                         "type":  "string"
-                     },
-                     {
-                         "key":  "accessToken",
-                         "value":  "",
-                         "type":  "string"
-                     },
-                     {
-                         "key":  "organizationId",
-                         "value":  "",
-                         "type":  "string"
-                     },
-                     {
-                         "key":  "userId",
-                         "value":  "",
-                         "type":  "string"
-                     }
-                 ]
+  "info": {
+    "_postman_id": "7a11d4f9-0e32-4e4c-a7b7-bizpilotai001",
+    "name": "BizPilot AI Backend",
+    "description": "Complete Postman Collection v2.1 for the current BizPilot AI backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const now = Date.now();",
+          "const currentRequest = pm.info.requestName;",
+          "if (currentRequest === 'Register' || !pm.collectionVariables.get('registrationEmail')) {",
+          "  const runId = String(now);",
+          "  pm.collectionVariables.set('registrationEmail', `avery.stone.${runId}@acme.test`);",
+          "  pm.collectionVariables.set('organizationSlug', `acme-operations-${runId}`);",
+          "  pm.collectionVariables.set('projectName', `Launch Operations Workspace ${runId}`);",
+          "  pm.collectionVariables.set('teamName', `Operations Team ${runId}`);",
+          "  pm.collectionVariables.set('roleName', `Operations Coordinator ${runId}`);",
+          "  pm.collectionVariables.set('accessToken', '');",
+          "  pm.collectionVariables.set('refreshToken', '');",
+          "  pm.collectionVariables.set('organizationId', '');",
+          "  pm.collectionVariables.set('userId', '');",
+          "  pm.collectionVariables.set('roleId', '');",
+          "  pm.collectionVariables.set('projectId', '');",
+          "  pm.collectionVariables.set('taskId', '');",
+          "  pm.collectionVariables.set('teamId', '');",
+          "  pm.collectionVariables.set('commentId', '');",
+          "  pm.collectionVariables.set('attachmentId', '');",
+          "  pm.collectionVariables.set('activityId', '');",
+          "}",
+          "for (const key of ['registrationEmail', 'organizationSlug', 'projectName', 'teamName', 'roleName']) {",
+          "  const value = pm.collectionVariables.get(key);",
+          "  if (value) pm.environment.set(key, value);",
+          "}",
+          "const accessToken = pm.collectionVariables.get('accessToken') || pm.environment.get('accessToken');",
+          "if (accessToken) pm.collectionVariables.set('accessToken', accessToken);"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "organizationId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "projectId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "taskId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "teamId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "commentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "attachmentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "roleId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "activityId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "registrationEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "organizationSlug",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "projectName",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "teamName",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "roleName",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Register\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const accessTokenValue = data.accessToken;",
+                  "if (accessTokenValue !== undefined && accessTokenValue !== null && accessTokenValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"accessToken\", accessTokenValue);",
+                  "  pm.environment.set(\"accessToken\", accessTokenValue);",
+                  "}",
+                  "const refreshTokenValue = data.refreshToken;",
+                  "if (refreshTokenValue !== undefined && refreshTokenValue !== null && refreshTokenValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"refreshToken\", refreshTokenValue);",
+                  "  pm.environment.set(\"refreshToken\", refreshTokenValue);",
+                  "}",
+                  "const userIdValue = data.user && data.user.id;",
+                  "if (userIdValue !== undefined && userIdValue !== null && userIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"userId\", userIdValue);",
+                  "  pm.environment.set(\"userId\", userIdValue);",
+                  "}",
+                  "const organizationIdValue = data.organization && data.organization.id;",
+                  "if (organizationIdValue !== undefined && organizationIdValue !== null && organizationIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"organizationId\", organizationIdValue);",
+                  "  pm.environment.set(\"organizationId\", organizationIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Login\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organizationName\": \"Acme Operations\",\n  \"organizationSlug\": \"{{organizationSlug}}\",\n  \"firstName\": \"Avery\",\n  \"lastName\": \"Stone\",\n  \"email\": \"{{registrationEmail}}\",\n  \"password\": \"StrongPassword123!\",\n  \"timezone\": \"America/New_York\",\n  \"country\": \"US\",\n  \"currency\": \"USD\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const accessTokenValue = data.accessToken;",
+                  "if (accessTokenValue !== undefined && accessTokenValue !== null && accessTokenValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"accessToken\", accessTokenValue);",
+                  "  pm.environment.set(\"accessToken\", accessTokenValue);",
+                  "}",
+                  "const refreshTokenValue = data.refreshToken;",
+                  "if (refreshTokenValue !== undefined && refreshTokenValue !== null && refreshTokenValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"refreshToken\", refreshTokenValue);",
+                  "  pm.environment.set(\"refreshToken\", refreshTokenValue);",
+                  "}",
+                  "const userIdValue = data.user && data.user.id;",
+                  "if (userIdValue !== undefined && userIdValue !== null && userIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"userId\", userIdValue);",
+                  "  pm.environment.set(\"userId\", userIdValue);",
+                  "}",
+                  "const organizationIdValue = data.organization && data.organization.id;",
+                  "if (organizationIdValue !== undefined && organizationIdValue !== null && organizationIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"organizationId\", organizationIdValue);",
+                  "  pm.environment.set(\"organizationId\", organizationIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Refresh Token\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{registrationEmail}}\",\n  \"password\": \"StrongPassword123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const accessTokenValue = data.accessToken;",
+                  "if (accessTokenValue !== undefined && accessTokenValue !== null && accessTokenValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"accessToken\", accessTokenValue);",
+                  "  pm.environment.set(\"accessToken\", accessTokenValue);",
+                  "}",
+                  "const refreshTokenValue = data.refreshToken;",
+                  "if (refreshTokenValue !== undefined && refreshTokenValue !== null && refreshTokenValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"refreshToken\", refreshTokenValue);",
+                  "  pm.environment.set(\"refreshToken\", refreshTokenValue);",
+                  "}",
+                  "postman.setNextRequest(\"Get Current User\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const userIdValue = data.user && data.user.id;",
+                  "if (userIdValue !== undefined && userIdValue !== null && userIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"userId\", userIdValue);",
+                  "  pm.environment.set(\"userId\", userIdValue);",
+                  "}",
+                  "const organizationIdValue = data.organization && data.organization.id;",
+                  "if (organizationIdValue !== undefined && organizationIdValue !== null && organizationIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"organizationId\", organizationIdValue);",
+                  "  pm.environment.set(\"organizationId\", organizationIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Get My Organization\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Organizations",
+      "item": [
+        {
+          "name": "Get My Organization",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const organizationIdValue = data.organization && data.organization.id;",
+                  "if (organizationIdValue !== undefined && organizationIdValue !== null && organizationIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"organizationId\", organizationIdValue);",
+                  "  pm.environment.set(\"organizationId\", organizationIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Update My Organization\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organizations/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update My Organization",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "if (data.organization && data.organization.id !== undefined && data.organization && data.organization.id !== null) {",
+                  "  pm.collectionVariables.set(\"organizationId\", data.organization && data.organization.id);",
+                  "  pm.environment.set(\"organizationId\", data.organization && data.organization.id);",
+                  "}",
+                  "postman.setNextRequest(\"Update Organization Settings\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/organizations/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                "me"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Operations Group\",\n  \"logo\": \"https://example.com/logo.png\",\n  \"timezone\": \"America/New_York\",\n  \"country\": \"US\",\n  \"currency\": \"USD\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Organization Settings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"List Users\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/organizations/me/settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                "me",
+                "settings"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"timezone\": \"America/New_York\",\n  \"currency\": \"USD\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Get User\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "sort",
+                  "value": "desc"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"userId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Update User\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"userId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "if (data.user && data.user.id !== undefined && data.user && data.user.id !== null) {",
+                  "  pm.collectionVariables.set(\"userId\", data.user && data.user.id);",
+                  "  pm.environment.set(\"userId\", data.user && data.user.id);",
+                  "}",
+                  "postman.setNextRequest(\"List Roles\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Avery\",\n  \"lastName\": \"Stone\",\n  \"avatar\": \"https://example.com/avatar.png\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"userId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"List Roles\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "RBAC",
+      "item": [
+        {
+          "name": "List Roles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Create Role\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roles"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const roleIdValue = data.role && data.role.id;",
+                  "if (roleIdValue !== undefined && roleIdValue !== null && roleIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"roleId\", roleIdValue);",
+                  "  pm.environment.set(\"roleId\", roleIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Get Role\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roles"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{roleName}}\",\n  \"description\": \"Coordinates project and task execution.\",\n  \"permissionIds\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Role",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"roleId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const roleIdValue = data.role && data.role.id;",
+                  "if (roleIdValue !== undefined && roleIdValue !== null && roleIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"roleId\", roleIdValue);",
+                  "  pm.environment.set(\"roleId\", roleIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Update Role\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roles",
+                "{{roleId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Role",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"roleId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const roleIdValue = data.role && data.role.id;",
+                  "if (roleIdValue !== undefined && roleIdValue !== null && roleIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"roleId\", roleIdValue);",
+                  "  pm.environment.set(\"roleId\", roleIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"List Permissions\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roles",
+                "{{roleId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{roleName}} Updated\",\n  \"description\": \"Coordinates daily operations.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Role",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"roleId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Logout\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roles",
+                "{{roleId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Permissions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Update Role Permissions\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "permissions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Role Permissions",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"roleId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Get User Roles\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roles",
+                "{{roleId}}",
+                "permissions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissionIds\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Roles",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"userId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"List Projects\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}",
+                "roles"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Roles",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"userId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}",
+                "roles"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleIds\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "List Projects",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Create Project\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "sort",
+                  "value": "desc"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "archived",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const projectIdValue = data.project && data.project.id;",
+                  "if (projectIdValue !== undefined && projectIdValue !== null && projectIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"projectId\", projectIdValue);",
+                  "  pm.environment.set(\"projectId\", projectIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Get Project\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{projectName}}\",\n  \"description\": \"Operational rollout project for BizPilot AI.\",\n  \"status\": \"ACTIVE\",\n  \"startDate\": \"2026-07-23T00:00:00.000Z\",\n  \"endDate\": \"2026-09-30T00:00:00.000Z\",\n  \"color\": \"#2563eb\",\n  \"archived\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Project",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"projectId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const projectIdValue = data.project && data.project.id;",
+                  "if (projectIdValue !== undefined && projectIdValue !== null && projectIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"projectId\", projectIdValue);",
+                  "  pm.environment.set(\"projectId\", projectIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Update Project\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/projects/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects",
+                "{{projectId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Project",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"projectId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const projectIdValue = data.project && data.project.id;",
+                  "if (projectIdValue !== undefined && projectIdValue !== null && projectIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"projectId\", projectIdValue);",
+                  "  pm.environment.set(\"projectId\", projectIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"List Tasks\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/projects/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects",
+                "{{projectId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{projectName}} Updated\",\n  \"description\": \"Updated rollout project scope.\",\n  \"status\": \"ACTIVE\",\n  \"color\": \"#0f766e\",\n  \"archived\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Project",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"projectId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Delete Role\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/projects/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects",
+                "{{projectId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "List Tasks",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"projectId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Create Task\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "sort",
+                  "value": "desc"
+                },
+                {
+                  "key": "projectId",
+                  "value": "{{projectId}}"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "priority",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "assigneeId",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "overdue",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Task",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"projectId\",\"userId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const taskIdValue = data.task && data.task.id;",
+                  "if (taskIdValue !== undefined && taskIdValue !== null && taskIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"taskId\", taskIdValue);",
+                  "  pm.environment.set(\"taskId\", taskIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Get Task\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectId\": \"{{projectId}}\",\n  \"title\": \"Prepare onboarding checklist\",\n  \"description\": \"Draft the initial checklist for the operations launch.\",\n  \"status\": \"TODO\",\n  \"priority\": \"HIGH\",\n  \"dueDate\": \"2026-08-15T00:00:00.000Z\",\n  \"assigneeId\": \"{{userId}}\",\n  \"estimatedHours\": 6,\n  \"actualHours\": 0,\n  \"archived\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Task",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"taskId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const taskIdValue = data.task && data.task.id;",
+                  "if (taskIdValue !== undefined && taskIdValue !== null && taskIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"taskId\", taskIdValue);",
+                  "  pm.environment.set(\"taskId\", taskIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Update Task\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{taskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{taskId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Task",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"taskId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const taskIdValue = data.task && data.task.id;",
+                  "if (taskIdValue !== undefined && taskIdValue !== null && taskIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"taskId\", taskIdValue);",
+                  "  pm.environment.set(\"taskId\", taskIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Update Task Status\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{taskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{taskId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Prepare onboarding checklist\",\n  \"description\": \"Finalize the onboarding checklist.\",\n  \"priority\": \"HIGH\",\n  \"actualHours\": 2,\n  \"archived\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Task",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"taskId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Delete Team\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{taskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{taskId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Task Status",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"taskId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const taskIdValue = data.task && data.task.id;",
+                  "if (taskIdValue !== undefined && taskIdValue !== null && taskIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"taskId\", taskIdValue);",
+                  "  pm.environment.set(\"taskId\", taskIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Update Task Assignee\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{taskId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{taskId}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Task Assignee",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"taskId\",\"userId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const taskIdValue = data.task && data.task.id;",
+                  "if (taskIdValue !== undefined && taskIdValue !== null && taskIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"taskId\", taskIdValue);",
+                  "  pm.environment.set(\"taskId\", taskIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"List Teams\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{taskId}}/assignee",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{taskId}}",
+                "assignee"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assigneeId\": \"{{userId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Teams",
+      "item": [
+        {
+          "name": "List Teams",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Create Team\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/teams",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "sort",
+                  "value": "desc"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "archived",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Team",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const teamIdValue = data.team && data.team.id;",
+                  "if (teamIdValue !== undefined && teamIdValue !== null && teamIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"teamId\", teamIdValue);",
+                  "  pm.environment.set(\"teamId\", teamIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Get Team\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{teamName}}\",\n  \"description\": \"Owns day-to-day project delivery.\",\n  \"color\": \"#16a34a\",\n  \"leadId\": \"{{userId}}\",\n  \"archived\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Team",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"teamId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const teamIdValue = data.team && data.team.id;",
+                  "if (teamIdValue !== undefined && teamIdValue !== null && teamIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"teamId\", teamIdValue);",
+                  "  pm.environment.set(\"teamId\", teamIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Update Team\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{teamId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{teamId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Team",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"teamId\",\"userId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const teamIdValue = data.team && data.team.id;",
+                  "if (teamIdValue !== undefined && teamIdValue !== null && teamIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"teamId\", teamIdValue);",
+                  "  pm.environment.set(\"teamId\", teamIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"List Team Members\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{teamId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{teamId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{teamName}} Updated\",\n  \"description\": \"Owns day-to-day delivery.\",\n  \"color\": \"#15803d\",\n  \"leadId\": \"{{userId}}\",\n  \"archived\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Team",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"teamId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Delete Project\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{teamId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{teamId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Team Members",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"teamId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Add Team Member\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{teamId}}/members",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{teamId}}",
+                "members"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Team Member",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"teamId\",\"userId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Remove Team Member\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{teamId}}/members",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{teamId}}",
+                "members"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Team Member",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"teamId\",\"userId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"List Comments\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{teamId}}/members/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{teamId}}",
+                "members",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "List Comments",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"taskId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Create Comment\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{taskId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{taskId}}",
+                "comments"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "sort",
+                  "value": "desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Comment",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"taskId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const commentIdValue = data.comment && data.comment.id;",
+                  "if (commentIdValue !== undefined && commentIdValue !== null && commentIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"commentId\", commentIdValue);",
+                  "  pm.environment.set(\"commentId\", commentIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Update Comment\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{taskId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{taskId}}",
+                "comments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This task is ready for the first implementation pass.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Comment",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"commentId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const commentIdValue = data.comment && data.comment.id;",
+                  "if (commentIdValue !== undefined && commentIdValue !== null && commentIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"commentId\", commentIdValue);",
+                  "  pm.environment.set(\"commentId\", commentIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Delete Comment\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comments",
+                "{{commentId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This task is ready for review after the first implementation pass.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Comment",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"commentId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"List Attachments\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comments",
+                "{{commentId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Attachments",
+      "item": [
+        {
+          "name": "List Attachments",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"taskId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Upload Attachment Metadata\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{taskId}}/attachments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{taskId}}",
+                "attachments"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "sort",
+                  "value": "desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Attachment Metadata",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"taskId\",\"organizationId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const attachmentIdValue = data.attachment && data.attachment.id;",
+                  "if (attachmentIdValue !== undefined && attachmentIdValue !== null && attachmentIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"attachmentId\", attachmentIdValue);",
+                  "  pm.environment.set(\"attachmentId\", attachmentIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Get Attachment Metadata\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{taskId}}/attachments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{taskId}}",
+                "attachments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"originalName\": \"project-brief.pdf\",\n  \"storedName\": \"project-brief-20260723.pdf\",\n  \"mimeType\": \"application/pdf\",\n  \"fileSize\": 245760,\n  \"storagePath\": \"organizations/{{organizationId}}/tasks/{{taskId}}/project-brief-20260723.pdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Attachment Metadata",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"attachmentId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const attachmentIdValue = data.attachment && data.attachment.id;",
+                  "if (attachmentIdValue !== undefined && attachmentIdValue !== null && attachmentIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"attachmentId\", attachmentIdValue);",
+                  "  pm.environment.set(\"attachmentId\", attachmentIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Delete Attachment\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/attachments/{{attachmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "attachments",
+                "{{attachmentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Attachment",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"attachmentId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"List Activities\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/attachments/{{attachmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "attachments",
+                "{{attachmentId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Activities",
+      "item": [
+        {
+          "name": "List Activities",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "const activityIdValue = data.activities && data.activities[0] && data.activities[0].id;",
+                  "if (activityIdValue !== undefined && activityIdValue !== null && activityIdValue !== \"\") {",
+                  "  pm.collectionVariables.set(\"activityId\", activityIdValue);",
+                  "  pm.environment.set(\"activityId\", activityIdValue);",
+                  "}",
+                  "postman.setNextRequest(\"Get Activity\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/activities",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "activities"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "sort",
+                  "value": "desc"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "action",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "resource",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "userId",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "startDate",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "endDate",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Activity",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requiredVariables = [\"activityId\"];",
+                  "const missingVariables = requiredVariables.filter((key) => !pm.collectionVariables.get(key) && !pm.environment.get(key));",
+                  "if (missingVariables.length > 0) {",
+                  "  ",
+                  "  throw new Error(`Missing required collection variable(s): ${missingVariables.join(', ')}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                  "const data = json.data || {};",
+                  "postman.setNextRequest(\"Delete Task\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/activities/{{activityId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "activities",
+                "{{activityId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
 }
