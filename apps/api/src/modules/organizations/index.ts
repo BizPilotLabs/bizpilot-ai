@@ -1,0 +1,1 @@
+export { organizationRoutes } from "./organization.routes.js";
