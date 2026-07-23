@@ -1,0 +1,21 @@
+{
+  "name": "bizpilot-ai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-powered business management platform for modern organizations.",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "format": "turbo format"
+  },
+  "devDependencies": {
+    "turbo": "^2.10.6"
+  }
+}
