@@ -52,7 +52,62 @@ const permissions = [
     action: "read",
     description: "View audit history for an organization.",
   },
-] as const;
+  {
+    key: "teams.read",
+    name: "Read teams",
+    resource: "teams",
+    action: "read",
+    description: "View teams and team memberships.",
+  },
+  {
+    key: "teams.create",
+    name: "Create teams",
+    resource: "teams",
+    action: "create",
+    description: "Create teams within an organization.",
+  },
+  {
+    key: "teams.update",
+    name: "Update teams",
+    resource: "teams",
+    action: "update",
+    description: "Update teams, leads, and team memberships.",
+  },
+  {
+    key: "teams.delete",
+    name: "Delete teams",
+    resource: "teams",
+    action: "delete",
+    description: "Archive teams within an organization.",
+  },
+  {
+    key: "comments.read",
+    name: "Read comments",
+    resource: "comments",
+    action: "read",
+    description: "View task comments within an organization.",
+  },
+  {
+    key: "comments.create",
+    name: "Create comments",
+    resource: "comments",
+    action: "create",
+    description: "Create task comments within an organization.",
+  },
+  {
+    key: "comments.update",
+    name: "Update comments",
+    resource: "comments",
+    action: "update",
+    description: "Update owned comments or moderate comments with elevated access.",
+  },
+  {
+    key: "comments.delete",
+    name: "Delete comments",
+    resource: "comments",
+    action: "delete",
+    description: "Delete owned comments or moderate comments with elevated access.",
+  },] as const;
 
 const seed = async (): Promise<void> => {
   await prisma.$transaction(

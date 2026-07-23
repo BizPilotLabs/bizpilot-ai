@@ -1,0 +1,1 @@
+export { commentRoutes } from "./comment.routes.js";

@@ -1,0 +1,1 @@
+export { teamRoutes } from "./team.routes.js";
