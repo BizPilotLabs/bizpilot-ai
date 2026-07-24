@@ -1,5 +1,7 @@
 export { CreateProjectDialog } from "./create-project-dialog";
 export type { CreateProjectDialogProps } from "./create-project-dialog";
+export { EditProjectDialog } from "./edit-project-dialog";
+export type { EditProjectDialogProps } from "./edit-project-dialog";
 export { ProjectCard } from "./project-card";
 export type { ProjectCardProps } from "./project-card";
 export { ProjectsEmptyState } from "./projects-empty-state";

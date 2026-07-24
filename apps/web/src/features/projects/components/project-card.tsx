@@ -1,12 +1,13 @@
 import { motion } from "framer-motion";
-import { CalendarDays, UserRound } from "lucide-react";
-import { type KeyboardEvent, type ReactElement } from "react";
-import { Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { CalendarDays, Pencil, UserRound } from "lucide-react";
+import { type KeyboardEvent, type MouseEvent, type ReactElement } from "react";
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { cardHover, slideUp } from "@/lib";
 import type { Project, ProjectStatus } from "../types";
 
 export interface ProjectCardProps {
   project: Project;
+  onEditProject: (project: Project) => void;
 }
 
 const statusVariantMap: Record<ProjectStatus, "neutral" | "primary" | "secondary" | "success" | "warning" | "danger"> = {
@@ -35,7 +36,12 @@ const handleKeyboardActivation = (event: KeyboardEvent<HTMLElement>): void => {
   }
 };
 
-export function ProjectCard({ project }: ProjectCardProps): ReactElement {
+export function ProjectCard({ project, onEditProject }: ProjectCardProps): ReactElement {
+  const handleEdit = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.stopPropagation();
+    onEditProject(project);
+  };
+
   return (
     <motion.article variants={slideUp} {...cardHover}>
       <Card
@@ -49,7 +55,12 @@ export function ProjectCard({ project }: ProjectCardProps): ReactElement {
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <CardTitle className="line-clamp-2 leading-snug">{project.name}</CardTitle>
-            <Badge variant={statusVariantMap[project.status]}>{formatStatus(project.status)}</Badge>
+            <div className="flex shrink-0 items-center gap-2">
+              <Badge variant={statusVariantMap[project.status]}>{formatStatus(project.status)}</Badge>
+              <Button aria-label={`Edit ${project.name}`} size="icon" type="button" variant="ghost" onClick={handleEdit}>
+                <Pencil aria-hidden="true" className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="grid gap-6">
