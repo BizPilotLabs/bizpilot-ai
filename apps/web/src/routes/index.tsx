@@ -1,12 +1,11 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
-
 import { AppShell } from "@/app/app-shell";
+import { LoginPage, RegisterOrganizationPage, ForgotPasswordPage, ResetPasswordPage } from "@/features/auth";
 import { GlobalLayout } from "@/layouts";
-
 import { NotFoundRoute } from "./not-found";
 import { ProtectedRoute } from "./protected-route";
 import { PublicRoute } from "./public-route";
-import { ProtectedEntryRoute, PublicEntryRoute } from "./route-placeholders";
+import { ProtectedEntryRoute } from "./route-placeholders";
 import { routePaths } from "./route-paths";
 
 export const appRouter = createBrowserRouter([
@@ -18,8 +17,15 @@ export const appRouter = createBrowserRouter([
         children: [
           { index: true, element: <Navigate replace to={routePaths.app} /> },
           {
+            path: routePaths.auth,
             element: <PublicRoute />,
-            children: [{ path: routePaths.auth, element: <PublicEntryRoute /> }]
+            children: [
+              { index: true, element: <Navigate replace to={routePaths.login} /> },
+              { path: "login", element: <LoginPage /> },
+              { path: "register", element: <RegisterOrganizationPage /> },
+              { path: "forgot-password", element: <ForgotPasswordPage /> },
+              { path: "reset-password", element: <ResetPasswordPage /> }
+            ]
           },
           {
             element: <ProtectedRoute />,

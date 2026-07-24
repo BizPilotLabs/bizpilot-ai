@@ -1,7 +1,5 @@
 import type { ReactElement } from "react";
-
 import { Navigate, Outlet } from "react-router-dom";
-
 import { routePaths } from "./route-paths";
 import { useAuthStore } from "@/store/auth-store";
 
