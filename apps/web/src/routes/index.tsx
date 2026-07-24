@@ -3,6 +3,7 @@ import { AppShell } from "@/app/app-shell";
 import { AppLayout } from "@/components/layout";
 import { LoginPage, RegisterOrganizationPage, ForgotPasswordPage, ResetPasswordPage } from "@/features/auth";
 import { ProjectsPage } from "@/features/projects";
+import { TasksPage } from "@/features/tasks";
 import { GlobalLayout } from "@/layouts";
 import { NotFoundRoute } from "./not-found";
 import { ProtectedRoute } from "./protected-route";
@@ -39,7 +40,7 @@ export const appRouter = createBrowserRouter([
                   { index: true, element: <Navigate replace to={routePaths.dashboard} /> },
                   { path: "dashboard", element: <AppPlaceholderRoute title="Dashboard" /> },
                   { path: "projects", element: <ProjectsPage /> },
-                  { path: "tasks", element: <AppPlaceholderRoute title="Tasks" /> },
+                  { path: "tasks", element: <TasksPage /> },
                   { path: "teams", element: <AppPlaceholderRoute title="Teams" /> },
                   { path: "users", element: <AppPlaceholderRoute title="Users" /> },
                   { path: "organizations", element: <AppPlaceholderRoute title="Organizations" /> },
