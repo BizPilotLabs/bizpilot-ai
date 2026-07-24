@@ -3,14 +3,19 @@ import type { ApiErrorResponse } from "../types";
 
 const fallbackMessage = "Something went wrong. Please try again.";
 
+const getResponseMessage = (data: ApiErrorResponse | undefined): string | undefined => {
+  const message = data?.error?.message;
+  return typeof message === "string" && message.trim().length > 0 ? message : undefined;
+};
+
 export const getAuthErrorMessage = (error: unknown): string => {
   if (error instanceof Error && !isAxiosError(error)) {
-    return error.message;
+    return error.message || fallbackMessage;
   }
 
   if (isAxiosError<ApiErrorResponse>(error)) {
     const status = error.response?.status;
-    const message = error.response?.data.error.message;
+    const message = getResponseMessage(error.response?.data);
 
     if (status === 401) {
       return "Your email or password was not recognized.";
@@ -24,7 +29,7 @@ export const getAuthErrorMessage = (error: unknown): string => {
       return "An account or organization with these details already exists.";
     }
 
-    return message ?? fallbackMessage;
+    return message ?? error.message ?? fallbackMessage;
   }
 
   return fallbackMessage;

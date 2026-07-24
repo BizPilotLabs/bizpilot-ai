@@ -3,7 +3,7 @@ import { cn } from "@/utils";
 
 export interface AvatarProps extends ImgHTMLAttributes<HTMLImageElement> {
   name: string;
-  src?: string;
+  src?: string | undefined;
   size?: "sm" | "md" | "lg";
 }
 

@@ -1,7 +1,13 @@
 import { z } from "zod";
 
+const urlSchema = z
+  .string()
+  .trim()
+  .url()
+  .transform((value) => value.replace(/\/$/u, ""));
+
 const envSchema = z.object({
-  VITE_API_BASE_URL: z.string().trim().url().default("http://localhost:4000"),
+  VITE_API_BASE_URL: urlSchema.default("http://localhost:4000"),
   VITE_APP_NAME: z.string().trim().min(1).default("BizPilot AI")
 });
 

@@ -7,6 +7,14 @@ interface RetriableRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
 
+const refreshClient = axios.create({
+  baseURL: env.apiBaseUrl,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json"
+  }
+});
+
 export const httpClient = axios.create({
   baseURL: env.apiBaseUrl,
   withCredentials: true,
@@ -44,7 +52,7 @@ httpClient.interceptors.response.use(
     originalRequest._retry = true;
 
     try {
-      const response = await axios.post<ApiSuccessResponse<RefreshResponse>>(`${env.apiBaseUrl}/auth/refresh`, undefined, { withCredentials: true });
+      const response = await refreshClient.post<ApiSuccessResponse<RefreshResponse>>("/auth/refresh");
       const accessToken = response.data.data.accessToken;
       useAuthStore.getState().setAccessToken(accessToken);
       originalRequest.headers.Authorization = `Bearer ${accessToken}`;
