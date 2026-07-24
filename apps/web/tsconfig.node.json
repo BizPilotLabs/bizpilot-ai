@@ -1,0 +1,12 @@
+{
+  "extends": "@bizpilot-ai/typescript-config/base.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowSyntheticDefaultImports": true,
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts", "tailwind.config.ts", "postcss.config.js", "eslint.config.js"]
+}
