@@ -35,17 +35,21 @@ export function RecentProjectsPanel({ error, isError, isLoading, isRetrying, pro
 
   return (
     <DashboardPanel title="Recent Projects" description="Latest projects in this organization">
-      <ul className="grid gap-3" aria-label="Recent projects">
+      <ul className="grid gap-2" aria-label="Recent projects">
         {projects.map((project) => (
-          <li key={project.id} className="rounded-xl border border-border p-4 transition-colors hover:bg-muted/50">
+          <li key={project.id} className="group rounded-2xl border border-border/60 bg-background/45 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/20 hover:bg-surface/80">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="truncate font-medium">{project.name}</p>
-                <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted-foreground">{project.description ?? "No description provided."}</p>
+                <p className="mt-1 line-clamp-1 text-sm leading-6 text-muted-foreground">{project.description ?? "No description provided."}</p>
               </div>
               <Badge variant={project.status === "ACTIVE" ? "success" : "neutral"}>{formatStatus(project.status)}</Badge>
             </div>
-            <p className="mt-3 text-xs text-muted-foreground">Updated {formatDate(project.updatedAt)}</p>
+            <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+              <span>Updated {formatDate(project.updatedAt)}</span>
+              <span className="h-px flex-1 bg-border/60" />
+              <span>{formatDate(project.createdAt)}</span>
+            </div>
           </li>
         ))}
       </ul>

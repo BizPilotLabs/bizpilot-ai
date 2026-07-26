@@ -52,28 +52,31 @@ export function TeamCard({ team, onEditTeam, onManageMembers }: TeamCardProps): 
     <motion.article variants={slideUp} {...cardHover}>
       <Card
         aria-label={`Team: ${team.name}`}
-        className="min-h-64 cursor-pointer transition-all duration-200 ease-premium hover:border-primary/30 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="group relative min-h-72 cursor-pointer overflow-hidden border-border/60 bg-gradient-to-br from-card via-card to-secondary/10 transition-all duration-300 ease-premium hover:-translate-y-1 hover:border-foreground/20 hover:shadow-[0_22px_70px_hsl(var(--shadow-color)/0.14)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         onClick={() => undefined}
         onKeyDown={handleKeyboardActivation}
         role="button"
         tabIndex={0}
       >
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-secondary/70 via-secondary/20 to-transparent" />
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
-            <CardTitle className="line-clamp-2 leading-snug">{team.name}</CardTitle>
-            <div className="flex shrink-0 items-center gap-2">
-              {team.archived ? <Badge variant="neutral">Archived</Badge> : null}
+            <div className="grid min-w-0 gap-2">
+              <CardTitle className="line-clamp-2 text-lg leading-snug">{team.name}</CardTitle>
+              {team.archived ? <Badge className="w-fit" variant="neutral">Archived</Badge> : null}
+            </div>
+            <div className="flex shrink-0 items-center gap-2 opacity-80 transition-opacity group-hover:opacity-100">
               <Button aria-label={`Edit ${team.name}`} size="icon" type="button" variant="ghost" onClick={handleEdit}>
                 <Pencil aria-hidden="true" className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="grid gap-6">
+        <CardContent className="grid gap-5">
           <p className="[display:-webkit-box] min-h-12 overflow-hidden text-sm leading-6 text-muted-foreground [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
             {team.description ?? "No description provided."}
           </p>
-          <dl className="grid gap-3 text-sm">
+          <dl className="grid gap-2 rounded-2xl border border-border/60 bg-background/45 p-3 text-sm">
             {team.leadId !== null ? (
               <div className="flex items-center justify-between gap-4">
                 <dt className="flex items-center gap-2 text-muted-foreground">
@@ -109,7 +112,7 @@ export function TeamCard({ team, onEditTeam, onManageMembers }: TeamCardProps): 
               <dd className="text-right font-medium text-foreground">{formatDate(team.updatedAt)}</dd>
             </div>
           </dl>
-          <Button leftIcon={<UsersRound aria-hidden="true" className="h-4 w-4" />} type="button" variant="neutral" onClick={handleManageMembers}>
+          <Button className="justify-start" leftIcon={<UsersRound aria-hidden="true" className="h-4 w-4" />} type="button" variant="neutral" onClick={handleManageMembers}>
             Manage Members
           </Button>
         </CardContent>

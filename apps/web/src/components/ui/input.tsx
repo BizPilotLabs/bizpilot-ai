@@ -15,7 +15,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({ className, labe
   return (
     <div className="grid gap-2">
       {label ? <label className="text-sm font-medium text-foreground" htmlFor={inputId}>{label}</label> : null}
-      <input ref={ref} id={inputId} aria-invalid={Boolean(error)} aria-describedby={descriptionId} className={cn("h-10 rounded-lg border border-input bg-surface px-3 text-sm text-foreground shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50", error && "border-danger focus-visible:ring-danger", className)} {...props} />
+      <input ref={ref} id={inputId} aria-invalid={Boolean(error)} aria-describedby={descriptionId} className={cn("h-10 rounded-xl border border-input/80 bg-surface/80 px-3 text-sm text-foreground shadow-[0_1px_0_hsl(var(--foreground)/0.03)] transition-all placeholder:text-muted-foreground/80 hover:border-foreground/20 focus-visible:border-ring focus-visible:bg-surface focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50", error && "border-danger focus-visible:ring-danger/30", className)} {...props} />
       {error ? <p id={descriptionId} className="text-sm text-danger">{error}</p> : null}
       {!error && hint ? <p id={descriptionId} className="text-sm text-muted-foreground">{hint}</p> : null}
     </div>
@@ -23,4 +23,3 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({ className, labe
 });
 
 Input.displayName = "Input";
-

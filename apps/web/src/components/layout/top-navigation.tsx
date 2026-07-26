@@ -30,8 +30,8 @@ export function TopNavigation({ onMobileMenuOpen }: TopNavigationProps): ReactEl
   };
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur-xl">
-      <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
+    <header className="sticky top-0 z-30 border-b border-border/70 bg-background/72 backdrop-blur-2xl">
+      <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
         <Button aria-label="Open navigation menu" className="lg:hidden" size="icon" variant="ghost" onClick={onMobileMenuOpen}>
           <Menu aria-hidden="true" className="h-5 w-5" />
         </Button>
@@ -39,12 +39,12 @@ export function TopNavigation({ onMobileMenuOpen }: TopNavigationProps): ReactEl
           <div className="hidden sm:block">
             <Breadcrumb items={breadcrumbItems} />
           </div>
-          <h1 className="truncate text-lg font-semibold text-foreground">{pageTitle}</h1>
+          <h1 className="truncate text-lg font-semibold tracking-normal text-foreground">{pageTitle}</h1>
         </div>
-        <div className="hidden w-full max-w-xs md:block">
+        <div className="hidden w-full max-w-sm md:block">
           <div className="relative">
             <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input aria-label="Search" className="pl-9" placeholder="Search" type="search" />
+            <Input aria-label="Search" className="h-9 rounded-full border-border/70 bg-surface/70 pl-9" placeholder="Search workspace" type="search" />
           </div>
         </div>
         <Tooltip content={theme === "dark" ? "Use light mode" : "Use dark mode"}>
@@ -60,12 +60,12 @@ export function TopNavigation({ onMobileMenuOpen }: TopNavigationProps): ReactEl
         <Dropdown
           align="right"
           trigger={
-            <button aria-label="Open profile menu" className="rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" type="button">
+            <button aria-label="Open profile menu" className="rounded-full border border-border/70 bg-surface p-0.5 shadow-xs transition hover:border-foreground/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" type="button">
               <Avatar name={displayName} size="sm" src={user?.avatar ?? undefined} />
             </button>
           }
         >
-          <div className="border-b border-border px-3 py-2">
+          <div className="border-b border-border/70 px-3 py-2">
             <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
             <p className="truncate text-xs text-muted-foreground">{user?.email ?? organization?.name ?? "Signed in"}</p>
           </div>
@@ -86,4 +86,3 @@ export function TopNavigation({ onMobileMenuOpen }: TopNavigationProps): ReactEl
     </header>
   );
 }
-

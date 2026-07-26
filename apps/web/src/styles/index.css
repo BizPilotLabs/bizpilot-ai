@@ -15,6 +15,11 @@
 
   body {
     @apply min-h-screen bg-background text-foreground antialiased;
+    background-image:
+      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--surface-raised)) 100%),
+      linear-gradient(hsl(var(--border) / 0.18) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.14) 1px, transparent 1px);
+    background-size: auto, 36px 36px, 36px 36px;
     font-family:
       Inter,
       ui-sans-serif,
@@ -24,6 +29,9 @@
       "Segoe UI",
       sans-serif;
     font-feature-settings:
+      "cv02" 1,
+      "cv03" 1,
+      "cv04" 1,
       "rlig" 1,
       "calt" 1;
   }
@@ -38,14 +46,13 @@
 }
 
 @layer utilities {
-  .text-display { @apply text-5xl font-semibold leading-tight tracking-normal md:text-6xl; }
-  .text-h1 { @apply text-4xl font-semibold leading-tight tracking-normal; }
+  .text-display { @apply text-5xl font-semibold leading-[1.02] tracking-normal md:text-6xl; }
+  .text-h1 { @apply text-4xl font-semibold leading-[1.08] tracking-normal; }
   .text-h2 { @apply text-3xl font-semibold leading-tight tracking-normal; }
   .text-h3 { @apply text-2xl font-semibold leading-snug tracking-normal; }
   .text-h4 { @apply text-xl font-semibold leading-snug tracking-normal; }
   .text-body-lg { @apply text-lg leading-8 tracking-normal; }
   .text-body { @apply text-base leading-7 tracking-normal; }
   .text-small { @apply text-sm leading-6 tracking-normal; }
-  .text-caption { @apply text-xs font-medium uppercase leading-5 tracking-wide; }
+  .text-caption { @apply text-xs font-semibold uppercase leading-5 tracking-wide; }
 }
-

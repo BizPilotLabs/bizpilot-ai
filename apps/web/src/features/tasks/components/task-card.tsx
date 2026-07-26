@@ -4,6 +4,7 @@ import { type KeyboardEvent, type MouseEvent, type ReactElement } from "react";
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { useToast } from "@/hooks";
 import { cardHover, slideUp } from "@/lib";
+import { cn } from "@/utils";
 import type { UserProfile } from "@/features/users";
 import { getTaskErrorMessage, useUpdateTaskAssignee, useUpdateTaskStatus } from "../hooks";
 import { TaskAssigneeMenu } from "./task-assignee-menu";
@@ -24,6 +25,14 @@ const priorityVariantMap: Record<TaskPriority, "neutral" | "primary" | "secondar
   MEDIUM: "secondary",
   HIGH: "warning",
   CRITICAL: "danger"
+};
+
+const statusAccentMap: Record<TaskStatus, string> = {
+  TODO: "from-muted-foreground/30 via-muted-foreground/10",
+  IN_PROGRESS: "from-primary/70 via-primary/20",
+  IN_REVIEW: "from-secondary/70 via-secondary/20",
+  DONE: "from-success/70 via-success/20",
+  CANCELLED: "from-danger/70 via-danger/20"
 };
 
 const formatEnum = (value: string): string => value.replace(/_/gu, " ").toLowerCase().replace(/\b\w/gu, (letter) => letter.toUpperCase());
@@ -121,17 +130,18 @@ export function TaskCard({ hasUsersError = false, isLoadingUsers = false, task, 
     <motion.article variants={slideUp} {...cardHover}>
       <Card
         aria-label={`Task: ${task.title}`}
-        className="min-h-64 cursor-pointer transition-all duration-200 ease-premium hover:border-primary/30 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="group relative min-h-72 cursor-pointer overflow-hidden border-border/60 bg-gradient-to-br from-card via-card to-muted/35 transition-all duration-300 ease-premium hover:-translate-y-1 hover:border-foreground/20 hover:shadow-[0_22px_70px_hsl(var(--shadow-color)/0.14)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         onClick={() => undefined}
         onKeyDown={handleKeyboardActivation}
         role="button"
         tabIndex={0}
       >
+        <div className={cn("absolute inset-x-0 top-0 h-1 bg-gradient-to-r to-transparent", statusAccentMap[task.status])} />
         <CardHeader>
           <div className="grid gap-3">
             <div className="flex items-start justify-between gap-4">
-              <CardTitle className="line-clamp-2 leading-snug">{task.title}</CardTitle>
-              <div className="flex shrink-0 items-center gap-1">
+              <CardTitle className="line-clamp-2 text-lg leading-snug">{task.title}</CardTitle>
+              <div className="flex shrink-0 items-center gap-1 opacity-80 transition-opacity group-hover:opacity-100">
                 <Button aria-label={`Edit ${task.title}`} size="icon" type="button" variant="ghost" onClick={handleEdit}>
                   <Pencil aria-hidden="true" className="h-4 w-4" />
                 </Button>
@@ -146,11 +156,11 @@ export function TaskCard({ hasUsersError = false, isLoadingUsers = false, task, 
             </div>
           </div>
         </CardHeader>
-        <CardContent className="grid gap-6">
+        <CardContent className="grid gap-5">
           <p className="[display:-webkit-box] min-h-12 overflow-hidden text-sm leading-6 text-muted-foreground [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
             {task.description ?? "No description provided."}
           </p>
-          <dl className="grid gap-3 text-sm">
+          <dl className="grid gap-2 rounded-2xl border border-border/60 bg-background/45 p-3 text-sm">
             <div className="flex items-center justify-between gap-4">
               <dt className="flex items-center gap-2 text-muted-foreground">
                 <CalendarClock aria-hidden="true" className="h-4 w-4" />

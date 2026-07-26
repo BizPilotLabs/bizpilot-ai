@@ -57,18 +57,19 @@ export function RecentTasksPanel({ error, isError, isLoading, isRetrying, tasks,
 
   return (
     <DashboardPanel title="Recent Tasks" description="Latest task updates across projects">
-      <ul className="grid gap-3" aria-label="Recent tasks">
+      <ul className="grid gap-2" aria-label="Recent tasks">
         {tasks.map((task) => (
-          <li key={task.id} className="rounded-xl border border-border p-4 transition-colors hover:bg-muted/50">
+          <li key={task.id} className="group rounded-2xl border border-border/60 bg-background/45 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/20 hover:bg-surface/80">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="truncate font-medium">{task.title}</p>
-                <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted-foreground">{task.description ?? "No description provided."}</p>
+                <p className="mt-1 line-clamp-1 text-sm leading-6 text-muted-foreground">{task.description ?? "No description provided."}</p>
               </div>
               <Badge variant={statusVariantMap[task.status]}>{formatEnum(task.status)}</Badge>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <Badge variant={priorityVariantMap[task.priority]}>{formatEnum(task.priority)}</Badge>
+              <span className="h-px min-w-4 flex-1 bg-border/60" />
               <span>Due {formatDate(task.dueDate)}</span>
             </div>
           </li>

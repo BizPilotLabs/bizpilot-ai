@@ -21,8 +21,9 @@ export function DashboardWelcome({ organization, user }: DashboardWelcomeProps):
       <p className="text-sm font-medium text-primary">{organization?.name ?? "BizPilot AI"}</p>
       <div className="grid gap-2 lg:max-w-3xl">
         <h1 className="text-h1">Welcome back, {getName(user)}</h1>
-        <p className="text-body-large text-muted-foreground">A live overview of your projects, tasks, and team activity from the current workspace.</p>
+        <p className="text-body-lg text-muted-foreground">A live overview of your projects, tasks, and team activity from the current workspace.</p>
       </div>
     </section>
   );
 }
+
