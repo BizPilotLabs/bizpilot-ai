@@ -1,13 +1,14 @@
 import { motion } from "framer-motion";
-import { CalendarDays, Crown, UsersRound } from "lucide-react";
-import { type KeyboardEvent, type ReactElement } from "react";
-import { Badge, Card, CardContent, CardHeader, CardTitle, Skeleton } from "@/components/ui";
+import { CalendarDays, Crown, Pencil, UsersRound } from "lucide-react";
+import { type KeyboardEvent, type MouseEvent, type ReactElement } from "react";
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Skeleton } from "@/components/ui";
 import { cardHover, slideUp } from "@/lib";
 import { useTeamMembers } from "../hooks";
 import type { Team, TeamMemberUser } from "../types";
 
 export interface TeamCardProps {
   team: Team;
+  onEditTeam: (team: Team) => void;
 }
 
 const formatDate = (value: string): string =>
@@ -31,10 +32,15 @@ const handleKeyboardActivation = (event: KeyboardEvent<HTMLElement>): void => {
   }
 };
 
-export function TeamCard({ team }: TeamCardProps): ReactElement {
+export function TeamCard({ team, onEditTeam }: TeamCardProps): ReactElement {
   const membersQuery = useTeamMembers(team.id);
   const members = membersQuery.data ?? [];
   const leadMember = team.leadId === null ? undefined : members.find((member) => member.userId === team.leadId);
+
+  const handleEdit = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.stopPropagation();
+    onEditTeam(team);
+  };
 
   return (
     <motion.article variants={slideUp} {...cardHover}>
@@ -49,7 +55,12 @@ export function TeamCard({ team }: TeamCardProps): ReactElement {
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <CardTitle className="line-clamp-2 leading-snug">{team.name}</CardTitle>
-            {team.archived ? <Badge variant="neutral">Archived</Badge> : null}
+            <div className="flex shrink-0 items-center gap-2">
+              {team.archived ? <Badge variant="neutral">Archived</Badge> : null}
+              <Button aria-label={`Edit ${team.name}`} size="icon" type="button" variant="ghost" onClick={handleEdit}>
+                <Pencil aria-hidden="true" className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="grid gap-6">

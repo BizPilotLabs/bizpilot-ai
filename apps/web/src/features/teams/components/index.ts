@@ -1,5 +1,7 @@
 export { CreateTeamDialog } from "./create-team-dialog";
 export type { CreateTeamDialogProps } from "./create-team-dialog";
+export { EditTeamDialog } from "./edit-team-dialog";
+export type { EditTeamDialogProps } from "./edit-team-dialog";
 export { TeamCard } from "./team-card";
 export type { TeamCardProps } from "./team-card";
 export { TeamsEmptyState } from "./teams-empty-state";
