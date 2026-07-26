@@ -26,6 +26,29 @@ const replaceTaskInList = (current: TaskListResult | undefined, task: Task): Tas
   };
 };
 
+const removeTaskFromList = (current: TaskListResult | undefined, taskId: string): TaskListResult | undefined => {
+  if (current === undefined) {
+    return current;
+  }
+
+  const taskExists = current.tasks.some((task) => task.id === taskId);
+  if (!taskExists) {
+    return current;
+  }
+
+  const nextTotal = Math.max(0, current.pagination.total - 1);
+  const nextTotalPages = nextTotal === 0 ? 0 : Math.ceil(nextTotal / current.pagination.limit);
+
+  return {
+    ...current,
+    tasks: current.tasks.filter((task) => task.id !== taskId),
+    pagination: {
+      ...current.pagination,
+      total: nextTotal,
+      totalPages: nextTotalPages
+    }
+  };
+};
 const updateTaskCaches = (queryClient: QueryClient, task: Task): void => {
   queryClient.setQueryData(taskQueryKeys.detail(task.id), task);
   queryClient.setQueriesData<TaskListResult>({ queryKey: taskQueryKeys.lists() }, (current) => replaceTaskInList(current, task));
@@ -92,8 +115,22 @@ export function useDeleteTask() {
 
   return useMutation({
     mutationFn: (taskId: string) => taskService.deleteTask(taskId),
+    onMutate: async (taskId) => {
+      await queryClient.cancelQueries({ queryKey: taskQueryKeys.all });
+      const snapshot = snapshotTaskCaches(queryClient, taskId);
+
+      queryClient.removeQueries({ queryKey: taskQueryKeys.detail(taskId) });
+      queryClient.setQueriesData<TaskListResult>({ queryKey: taskQueryKeys.lists() }, (current) => removeTaskFromList(current, taskId));
+
+      return snapshot;
+    },
+    onError: (_error, taskId, context) => {
+      restoreTaskCaches(queryClient, taskId, context);
+    },
     onSuccess: (_result, taskId) => {
       queryClient.removeQueries({ queryKey: taskQueryKeys.detail(taskId) });
+    },
+    onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: taskQueryKeys.lists() });
     }
   });
@@ -158,5 +195,4 @@ export function useUpdateTaskAssignee() {
     }
   });
 }
-
 

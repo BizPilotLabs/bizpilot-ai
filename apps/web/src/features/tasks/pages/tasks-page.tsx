@@ -1,12 +1,22 @@
 import { useState, type ReactElement } from "react";
 import { useUsers } from "@/features/users";
-import { CreateTaskDialog, EditTaskDialog, TasksEmptyState, TasksErrorState, TasksList, TasksLoadingState, TasksPageHeader } from "../components";
+import {
+  CreateTaskDialog,
+  DeleteTaskDialog,
+  EditTaskDialog,
+  TasksEmptyState,
+  TasksErrorState,
+  TasksList,
+  TasksLoadingState,
+  TasksPageHeader
+} from "../components";
 import { getTaskErrorMessage, useTasks } from "../hooks";
 import type { Task } from "../types";
 
 export function TasksPage(): ReactElement {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const tasksQuery = useTasks();
   const usersQuery = useUsers({ limit: 100 });
   const tasks = tasksQuery.data?.tasks ?? [];
@@ -16,9 +26,19 @@ export function TasksPage(): ReactElement {
     setSelectedTask(task);
   };
 
+  const handleDeleteTask = (task: Task): void => {
+    setTaskToDelete(task);
+  };
+
   const handleEditDialogOpenChange = (open: boolean): void => {
     if (!open) {
       setSelectedTask(null);
+    }
+  };
+
+  const handleDeleteDialogOpenChange = (open: boolean): void => {
+    if (!open) {
+      setTaskToDelete(null);
     }
   };
 
@@ -42,11 +62,13 @@ export function TasksPage(): ReactElement {
           isLoadingUsers={usersQuery.isLoading}
           tasks={tasks}
           users={users}
+          onDeleteTask={handleDeleteTask}
           onEditTask={handleEditTask}
         />
       ) : null}
       <CreateTaskDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
       <EditTaskDialog open={selectedTask !== null} task={selectedTask} onOpenChange={handleEditDialogOpenChange} />
+      <DeleteTaskDialog open={taskToDelete !== null} task={taskToDelete} onOpenChange={handleDeleteDialogOpenChange} />
     </div>
   );
 }

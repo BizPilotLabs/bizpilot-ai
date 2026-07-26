@@ -1,5 +1,7 @@
 export { CreateTaskDialog } from "./create-task-dialog";
 export type { CreateTaskDialogProps } from "./create-task-dialog";
+export { DeleteTaskDialog } from "./delete-task-dialog";
+export type { DeleteTaskDialogProps } from "./delete-task-dialog";
 export { EditTaskDialog } from "./edit-task-dialog";
 export type { EditTaskDialogProps } from "./edit-task-dialog";
 export { TaskAssigneeMenu } from "./task-assignee-menu";

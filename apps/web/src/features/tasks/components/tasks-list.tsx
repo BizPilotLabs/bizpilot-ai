@@ -10,10 +10,11 @@ export interface TasksListProps {
   isLoadingUsers?: boolean;
   tasks: Task[];
   users: UserProfile[];
+  onDeleteTask: (task: Task) => void;
   onEditTask: (task: Task) => void;
 }
 
-export function TasksList({ hasUsersError = false, isLoadingUsers = false, tasks, users, onEditTask }: TasksListProps): ReactElement {
+export function TasksList({ hasUsersError = false, isLoadingUsers = false, tasks, users, onDeleteTask, onEditTask }: TasksListProps): ReactElement {
   return (
     <motion.section aria-label="Tasks" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" variants={staggerChildren} initial="hidden" animate="visible">
       {tasks.map((task) => (
@@ -23,6 +24,7 @@ export function TasksList({ hasUsersError = false, isLoadingUsers = false, tasks
           isLoadingUsers={isLoadingUsers}
           task={task}
           users={users}
+          onDeleteTask={onDeleteTask}
           onEditTask={onEditTask}
         />
       ))}

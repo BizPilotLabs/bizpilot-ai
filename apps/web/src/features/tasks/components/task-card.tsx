@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { CalendarClock, Pencil, UserRound } from "lucide-react";
+import { CalendarClock, Pencil, Trash2, UserRound } from "lucide-react";
 import { type KeyboardEvent, type MouseEvent, type ReactElement } from "react";
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { useToast } from "@/hooks";
@@ -15,6 +15,7 @@ export interface TaskCardProps {
   isLoadingUsers?: boolean;
   task: Task;
   users: UserProfile[];
+  onDeleteTask: (task: Task) => void;
   onEditTask: (task: Task) => void;
 }
 
@@ -51,7 +52,7 @@ const handleKeyboardActivation = (event: KeyboardEvent<HTMLElement>): void => {
   }
 };
 
-export function TaskCard({ hasUsersError = false, isLoadingUsers = false, task, users, onEditTask }: TaskCardProps): ReactElement {
+export function TaskCard({ hasUsersError = false, isLoadingUsers = false, task, users, onDeleteTask, onEditTask }: TaskCardProps): ReactElement {
   const updateAssignee = useUpdateTaskAssignee();
   const updateStatus = useUpdateTaskStatus();
   const { addToast } = useToast();
@@ -60,6 +61,11 @@ export function TaskCard({ hasUsersError = false, isLoadingUsers = false, task, 
   const handleEdit = (event: MouseEvent<HTMLButtonElement>): void => {
     event.stopPropagation();
     onEditTask(task);
+  };
+
+  const handleDelete = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.stopPropagation();
+    onDeleteTask(task);
   };
 
   const handleStatusChange = (status: TaskStatus): void => {
@@ -125,9 +131,14 @@ export function TaskCard({ hasUsersError = false, isLoadingUsers = false, task, 
           <div className="grid gap-3">
             <div className="flex items-start justify-between gap-4">
               <CardTitle className="line-clamp-2 leading-snug">{task.title}</CardTitle>
-              <Button aria-label={`Edit ${task.title}`} size="icon" type="button" variant="ghost" onClick={handleEdit}>
-                <Pencil aria-hidden="true" className="h-4 w-4" />
-              </Button>
+              <div className="flex shrink-0 items-center gap-1">
+                <Button aria-label={`Edit ${task.title}`} size="icon" type="button" variant="ghost" onClick={handleEdit}>
+                  <Pencil aria-hidden="true" className="h-4 w-4" />
+                </Button>
+                <Button aria-label={`Delete ${task.title}`} size="icon" type="button" variant="ghost" onClick={handleDelete}>
+                  <Trash2 aria-hidden="true" className="h-4 w-4 text-danger" />
+                </Button>
+              </div>
             </div>
             <div className="flex flex-wrap gap-2">
               <TaskStatusMenu currentStatus={task.status} disabled={updateStatus.isPending} onStatusChange={handleStatusChange} />
