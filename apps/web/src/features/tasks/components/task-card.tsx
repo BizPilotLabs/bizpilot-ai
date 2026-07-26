@@ -4,12 +4,17 @@ import { type KeyboardEvent, type MouseEvent, type ReactElement } from "react";
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { useToast } from "@/hooks";
 import { cardHover, slideUp } from "@/lib";
-import { getTaskErrorMessage, useUpdateTaskStatus } from "../hooks";
+import type { UserProfile } from "@/features/users";
+import { getTaskErrorMessage, useUpdateTaskAssignee, useUpdateTaskStatus } from "../hooks";
+import { TaskAssigneeMenu } from "./task-assignee-menu";
 import { TaskStatusMenu } from "./task-status-menu";
 import type { Task, TaskPriority, TaskStatus } from "../types";
 
 export interface TaskCardProps {
+  hasUsersError?: boolean;
+  isLoadingUsers?: boolean;
   task: Task;
+  users: UserProfile[];
   onEditTask: (task: Task) => void;
 }
 
@@ -34,7 +39,10 @@ const formatDate = (value: string | null): string => {
   }).format(new Date(value));
 };
 
-const shortenIdentifier = (value: string): string => (value.length > 12 ? `${value.slice(0, 8)}...${value.slice(-4)}` : value);
+const getUserDisplayName = (user: UserProfile): string => {
+  const name = `${user.firstName} ${user.lastName}`.trim();
+  return name.length > 0 ? name : user.email;
+};
 
 const handleKeyboardActivation = (event: KeyboardEvent<HTMLElement>): void => {
   if (event.key === "Enter" || event.key === " ") {
@@ -43,9 +51,11 @@ const handleKeyboardActivation = (event: KeyboardEvent<HTMLElement>): void => {
   }
 };
 
-export function TaskCard({ task, onEditTask }: TaskCardProps): ReactElement {
+export function TaskCard({ hasUsersError = false, isLoadingUsers = false, task, users, onEditTask }: TaskCardProps): ReactElement {
+  const updateAssignee = useUpdateTaskAssignee();
   const updateStatus = useUpdateTaskStatus();
   const { addToast } = useToast();
+  const assignee = task.assigneeId === null ? null : users.find((user) => user.id === task.assigneeId) ?? null;
 
   const handleEdit = (event: MouseEvent<HTMLButtonElement>): void => {
     event.stopPropagation();
@@ -66,6 +76,33 @@ export function TaskCard({ task, onEditTask }: TaskCardProps): ReactElement {
         onError: (error) => {
           addToast({
             title: "Status was not updated",
+            description: getTaskErrorMessage(error),
+            variant: "danger"
+          });
+        }
+      }
+    );
+  };
+
+  const handleAssigneeChange = (assigneeId: string | null): void => {
+    const nextAssignee = assigneeId === null ? null : users.find((user) => user.id === assigneeId) ?? null;
+
+    updateAssignee.mutate(
+      { taskId: task.id, assigneeId },
+      {
+        onSuccess: (updatedTask) => {
+          addToast({
+            title: assigneeId === null ? "Task unassigned" : "Task assigned",
+            description:
+              assigneeId === null
+                ? `${updatedTask.title} is now unassigned.`
+                : `${updatedTask.title} is assigned to ${nextAssignee === null ? "the selected user" : getUserDisplayName(nextAssignee)}.`,
+            variant: "success"
+          });
+        },
+        onError: (error) => {
+          addToast({
+            title: "Assignee was not updated",
             description: getTaskErrorMessage(error),
             variant: "danger"
           });
@@ -110,19 +147,26 @@ export function TaskCard({ task, onEditTask }: TaskCardProps): ReactElement {
               </dt>
               <dd className="text-right font-medium text-foreground">{formatDate(task.dueDate)}</dd>
             </div>
-            {task.assigneeId !== null ? (
-              <div className="flex items-center justify-between gap-4">
-                <dt className="flex items-center gap-2 text-muted-foreground">
-                  <UserRound aria-hidden="true" className="h-4 w-4" />
-                  Assignee
-                </dt>
-                <dd className="text-right font-medium text-foreground" title={task.assigneeId}>{shortenIdentifier(task.assigneeId)}</dd>
-              </div>
-            ) : null}
+            <div className="flex items-center justify-between gap-4">
+              <dt className="flex items-center gap-2 text-muted-foreground">
+                <UserRound aria-hidden="true" className="h-4 w-4" />
+                Assignee
+              </dt>
+              <dd className="min-w-0 text-right">
+                <TaskAssigneeMenu
+                  assignee={assignee}
+                  currentAssigneeId={task.assigneeId}
+                  disabled={updateAssignee.isPending}
+                  hasUsersError={hasUsersError}
+                  isLoadingUsers={isLoadingUsers}
+                  users={users}
+                  onAssigneeChange={handleAssigneeChange}
+                />
+              </dd>
+            </div>
           </dl>
         </CardContent>
       </Card>
     </motion.article>
   );
 }
-

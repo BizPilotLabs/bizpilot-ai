@@ -1,19 +1,31 @@
 import { motion } from "framer-motion";
 import { type ReactElement } from "react";
 import { staggerChildren } from "@/lib";
+import type { UserProfile } from "@/features/users";
 import { TaskCard } from "./task-card";
 import type { Task } from "../types";
 
 export interface TasksListProps {
+  hasUsersError?: boolean;
+  isLoadingUsers?: boolean;
   tasks: Task[];
+  users: UserProfile[];
   onEditTask: (task: Task) => void;
 }
 
-export function TasksList({ tasks, onEditTask }: TasksListProps): ReactElement {
+export function TasksList({ hasUsersError = false, isLoadingUsers = false, tasks, users, onEditTask }: TasksListProps): ReactElement {
   return (
     <motion.section aria-label="Tasks" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" variants={staggerChildren} initial="hidden" animate="visible">
-      {tasks.map((task) => <TaskCard key={task.id} task={task} onEditTask={onEditTask} />)}
+      {tasks.map((task) => (
+        <TaskCard
+          key={task.id}
+          hasUsersError={hasUsersError}
+          isLoadingUsers={isLoadingUsers}
+          task={task}
+          users={users}
+          onEditTask={onEditTask}
+        />
+      ))}
     </motion.section>
   );
 }
-

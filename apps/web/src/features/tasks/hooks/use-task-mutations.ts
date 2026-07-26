@@ -134,7 +134,29 @@ export function useUpdateTaskAssignee() {
 
   return useMutation({
     mutationFn: ({ taskId, assigneeId }: UpdateTaskAssigneeVariables) => taskService.updateTaskAssignee(taskId, assigneeId),
-    onSuccess: (task) => updateTaskCaches(queryClient, task)
+    onMutate: async ({ taskId, assigneeId }) => {
+      await queryClient.cancelQueries({ queryKey: taskQueryKeys.all });
+      const snapshot = snapshotTaskCaches(queryClient, taskId);
+      const currentTask = findTaskInCaches(queryClient, taskId);
+
+      if (currentTask !== undefined) {
+        updateTaskCaches(queryClient, {
+          ...currentTask,
+          assigneeId,
+          updatedAt: new Date().toISOString()
+        });
+      }
+
+      return snapshot;
+    },
+    onError: (_error, variables, context) => {
+      restoreTaskCaches(queryClient, variables.taskId, context);
+    },
+    onSuccess: (task) => updateTaskCaches(queryClient, task),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: taskQueryKeys.lists() });
+    }
   });
 }
+
 

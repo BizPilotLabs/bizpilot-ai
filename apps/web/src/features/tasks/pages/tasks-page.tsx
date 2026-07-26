@@ -1,4 +1,5 @@
 import { useState, type ReactElement } from "react";
+import { useUsers } from "@/features/users";
 import { CreateTaskDialog, EditTaskDialog, TasksEmptyState, TasksErrorState, TasksList, TasksLoadingState, TasksPageHeader } from "../components";
 import { getTaskErrorMessage, useTasks } from "../hooks";
 import type { Task } from "../types";
@@ -7,7 +8,9 @@ export function TasksPage(): ReactElement {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const tasksQuery = useTasks();
+  const usersQuery = useUsers({ limit: 100 });
   const tasks = tasksQuery.data?.tasks ?? [];
+  const users = usersQuery.data?.users ?? [];
 
   const handleEditTask = (task: Task): void => {
     setSelectedTask(task);
@@ -33,10 +36,17 @@ export function TasksPage(): ReactElement {
         />
       ) : null}
       {tasksQuery.isSuccess && tasks.length === 0 ? <TasksEmptyState /> : null}
-      {tasksQuery.isSuccess && tasks.length > 0 ? <TasksList tasks={tasks} onEditTask={handleEditTask} /> : null}
+      {tasksQuery.isSuccess && tasks.length > 0 ? (
+        <TasksList
+          hasUsersError={usersQuery.isError}
+          isLoadingUsers={usersQuery.isLoading}
+          tasks={tasks}
+          users={users}
+          onEditTask={handleEditTask}
+        />
+      ) : null}
       <CreateTaskDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
       <EditTaskDialog open={selectedTask !== null} task={selectedTask} onOpenChange={handleEditDialogOpenChange} />
     </div>
   );
 }
-
