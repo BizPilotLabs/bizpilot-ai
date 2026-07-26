@@ -2,21 +2,16 @@ import { motion } from "framer-motion";
 import { CalendarClock, Pencil, UserRound } from "lucide-react";
 import { type KeyboardEvent, type MouseEvent, type ReactElement } from "react";
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { useToast } from "@/hooks";
 import { cardHover, slideUp } from "@/lib";
+import { getTaskErrorMessage, useUpdateTaskStatus } from "../hooks";
+import { TaskStatusMenu } from "./task-status-menu";
 import type { Task, TaskPriority, TaskStatus } from "../types";
 
 export interface TaskCardProps {
   task: Task;
   onEditTask: (task: Task) => void;
 }
-
-const statusVariantMap: Record<TaskStatus, "neutral" | "primary" | "secondary" | "success" | "warning" | "danger"> = {
-  TODO: "neutral",
-  IN_PROGRESS: "primary",
-  IN_REVIEW: "secondary",
-  DONE: "success",
-  CANCELLED: "danger"
-};
 
 const priorityVariantMap: Record<TaskPriority, "neutral" | "primary" | "secondary" | "success" | "warning" | "danger"> = {
   LOW: "neutral",
@@ -49,9 +44,34 @@ const handleKeyboardActivation = (event: KeyboardEvent<HTMLElement>): void => {
 };
 
 export function TaskCard({ task, onEditTask }: TaskCardProps): ReactElement {
+  const updateStatus = useUpdateTaskStatus();
+  const { addToast } = useToast();
+
   const handleEdit = (event: MouseEvent<HTMLButtonElement>): void => {
     event.stopPropagation();
     onEditTask(task);
+  };
+
+  const handleStatusChange = (status: TaskStatus): void => {
+    updateStatus.mutate(
+      { taskId: task.id, status },
+      {
+        onSuccess: (updatedTask) => {
+          addToast({
+            title: "Task status updated",
+            description: `${updatedTask.title} is now ${formatEnum(updatedTask.status)}.`,
+            variant: "success"
+          });
+        },
+        onError: (error) => {
+          addToast({
+            title: "Status was not updated",
+            description: getTaskErrorMessage(error),
+            variant: "danger"
+          });
+        }
+      }
+    );
   };
 
   return (
@@ -73,7 +93,7 @@ export function TaskCard({ task, onEditTask }: TaskCardProps): ReactElement {
               </Button>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge variant={statusVariantMap[task.status]}>{formatEnum(task.status)}</Badge>
+              <TaskStatusMenu currentStatus={task.status} disabled={updateStatus.isPending} onStatusChange={handleStatusChange} />
               <Badge variant={priorityVariantMap[task.priority]}>{formatEnum(task.priority)}</Badge>
             </div>
           </div>

@@ -4,6 +4,8 @@ export { EditTaskDialog } from "./edit-task-dialog";
 export type { EditTaskDialogProps } from "./edit-task-dialog";
 export { TaskCard } from "./task-card";
 export type { TaskCardProps } from "./task-card";
+export { TaskStatusMenu } from "./task-status-menu";
+export type { TaskStatusMenuProps } from "./task-status-menu";
 export { TasksEmptyState } from "./tasks-empty-state";
 export { TasksErrorState } from "./tasks-error-state";
 export type { TasksErrorStateProps } from "./tasks-error-state";
