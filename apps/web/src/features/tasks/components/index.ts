@@ -1,5 +1,7 @@
 export { CreateTaskDialog } from "./create-task-dialog";
 export type { CreateTaskDialogProps } from "./create-task-dialog";
+export { EditTaskDialog } from "./edit-task-dialog";
+export type { EditTaskDialogProps } from "./edit-task-dialog";
 export { TaskCard } from "./task-card";
 export type { TaskCardProps } from "./task-card";
 export { TasksEmptyState } from "./tasks-empty-state";

@@ -1,12 +1,13 @@
 import { motion } from "framer-motion";
-import { CalendarClock, UserRound } from "lucide-react";
-import { type KeyboardEvent, type ReactElement } from "react";
-import { Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { CalendarClock, Pencil, UserRound } from "lucide-react";
+import { type KeyboardEvent, type MouseEvent, type ReactElement } from "react";
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { cardHover, slideUp } from "@/lib";
 import type { Task, TaskPriority, TaskStatus } from "../types";
 
 export interface TaskCardProps {
   task: Task;
+  onEditTask: (task: Task) => void;
 }
 
 const statusVariantMap: Record<TaskStatus, "neutral" | "primary" | "secondary" | "success" | "warning" | "danger"> = {
@@ -47,7 +48,12 @@ const handleKeyboardActivation = (event: KeyboardEvent<HTMLElement>): void => {
   }
 };
 
-export function TaskCard({ task }: TaskCardProps): ReactElement {
+export function TaskCard({ task, onEditTask }: TaskCardProps): ReactElement {
+  const handleEdit = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.stopPropagation();
+    onEditTask(task);
+  };
+
   return (
     <motion.article variants={slideUp} {...cardHover}>
       <Card
@@ -60,7 +66,12 @@ export function TaskCard({ task }: TaskCardProps): ReactElement {
       >
         <CardHeader>
           <div className="grid gap-3">
-            <CardTitle className="line-clamp-2 leading-snug">{task.title}</CardTitle>
+            <div className="flex items-start justify-between gap-4">
+              <CardTitle className="line-clamp-2 leading-snug">{task.title}</CardTitle>
+              <Button aria-label={`Edit ${task.title}`} size="icon" type="button" variant="ghost" onClick={handleEdit}>
+                <Pencil aria-hidden="true" className="h-4 w-4" />
+              </Button>
+            </div>
             <div className="flex flex-wrap gap-2">
               <Badge variant={statusVariantMap[task.status]}>{formatEnum(task.status)}</Badge>
               <Badge variant={priorityVariantMap[task.priority]}>{formatEnum(task.priority)}</Badge>

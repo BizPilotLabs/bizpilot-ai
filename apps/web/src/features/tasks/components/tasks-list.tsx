@@ -6,12 +6,13 @@ import type { Task } from "../types";
 
 export interface TasksListProps {
   tasks: Task[];
+  onEditTask: (task: Task) => void;
 }
 
-export function TasksList({ tasks }: TasksListProps): ReactElement {
+export function TasksList({ tasks, onEditTask }: TasksListProps): ReactElement {
   return (
     <motion.section aria-label="Tasks" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" variants={staggerChildren} initial="hidden" animate="visible">
-      {tasks.map((task) => <TaskCard key={task.id} task={task} />)}
+      {tasks.map((task) => <TaskCard key={task.id} task={task} onEditTask={onEditTask} />)}
     </motion.section>
   );
 }
