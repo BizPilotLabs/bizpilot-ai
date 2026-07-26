@@ -6,6 +6,7 @@ import { DashboardPage } from "@/features/dashboard";
 import { ProjectsPage } from "@/features/projects";
 import { TasksPage } from "@/features/tasks";
 import { TeamsPage } from "@/features/teams";
+import { UsersPage } from "@/features/users";
 import { GlobalLayout } from "@/layouts";
 import { NotFoundRoute } from "./not-found";
 import { ProtectedRoute } from "./protected-route";
@@ -44,7 +45,7 @@ export const appRouter = createBrowserRouter([
                   { path: "projects", element: <ProjectsPage /> },
                   { path: "tasks", element: <TasksPage /> },
                   { path: "teams", element: <TeamsPage /> },
-                  { path: "users", element: <AppPlaceholderRoute title="Users" /> },
+                  { path: "users", element: <UsersPage /> },
                   { path: "organizations", element: <AppPlaceholderRoute title="Organizations" /> },
                   { path: "activity", element: <AppPlaceholderRoute title="Activity" /> },
                   { path: "settings", element: <AppPlaceholderRoute title="Settings" /> }

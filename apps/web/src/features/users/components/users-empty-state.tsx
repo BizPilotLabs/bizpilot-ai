@@ -1,0 +1,19 @@
+import { UsersRound } from "lucide-react";
+import { type ReactElement } from "react";
+import { Card } from "@/components/ui";
+
+export function UsersEmptyState(): ReactElement {
+  return (
+    <Card className="flex min-h-96 items-center justify-center overflow-hidden border-dashed bg-gradient-to-br from-muted/40 via-card to-primary/5">
+      <div className="mx-auto grid max-w-sm justify-items-center gap-4 px-6 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border/70 bg-surface/80 text-muted-foreground shadow-xs">
+          <UsersRound aria-hidden="true" className="h-7 w-7" />
+        </div>
+        <div className="grid gap-2">
+          <h2 className="text-h4">No users yet</h2>
+          <p className="text-sm text-muted-foreground">Invite your first team member to start collaborating.</p>
+        </div>
+      </div>
+    </Card>
+  );
+}
