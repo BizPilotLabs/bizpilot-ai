@@ -2,6 +2,7 @@ import { Navigate, createBrowserRouter } from "react-router-dom";
 import { AppShell } from "@/app/app-shell";
 import { AppLayout } from "@/components/layout";
 import { LoginPage, RegisterOrganizationPage, ForgotPasswordPage, ResetPasswordPage } from "@/features/auth";
+import { DashboardPage } from "@/features/dashboard";
 import { ProjectsPage } from "@/features/projects";
 import { TasksPage } from "@/features/tasks";
 import { GlobalLayout } from "@/layouts";
@@ -38,7 +39,7 @@ export const appRouter = createBrowserRouter([
                 element: <AppLayout />,
                 children: [
                   { index: true, element: <Navigate replace to={routePaths.dashboard} /> },
-                  { path: "dashboard", element: <AppPlaceholderRoute title="Dashboard" /> },
+                  { path: "dashboard", element: <DashboardPage /> },
                   { path: "projects", element: <ProjectsPage /> },
                   { path: "tasks", element: <TasksPage /> },
                   { path: "teams", element: <AppPlaceholderRoute title="Teams" /> },
