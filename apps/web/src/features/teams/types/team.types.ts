@@ -113,9 +113,11 @@ export interface AddTeamMemberInput {
 export interface AddTeamMemberVariables {
   teamId: string;
   data: AddTeamMemberInput;
+  optimisticMember?: TeamMember;
 }
 
 export interface RemoveTeamMemberVariables {
   teamId: string;
   userId: string;
 }
+

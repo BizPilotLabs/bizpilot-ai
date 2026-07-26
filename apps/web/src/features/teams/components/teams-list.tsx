@@ -7,12 +7,13 @@ import type { Team } from "../types";
 export interface TeamsListProps {
   teams: Team[];
   onEditTeam: (team: Team) => void;
+  onManageMembers: (team: Team) => void;
 }
 
-export function TeamsList({ teams, onEditTeam }: TeamsListProps): ReactElement {
+export function TeamsList({ teams, onEditTeam, onManageMembers }: TeamsListProps): ReactElement {
   return (
     <motion.section aria-label="Teams" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" variants={staggerChildren} initial="hidden" animate="visible">
-      {teams.map((team) => <TeamCard key={team.id} team={team} onEditTeam={onEditTeam} />)}
+      {teams.map((team) => <TeamCard key={team.id} team={team} onEditTeam={onEditTeam} onManageMembers={onManageMembers} />)}
     </motion.section>
   );
 }

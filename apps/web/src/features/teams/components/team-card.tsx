@@ -9,6 +9,7 @@ import type { Team, TeamMemberUser } from "../types";
 export interface TeamCardProps {
   team: Team;
   onEditTeam: (team: Team) => void;
+  onManageMembers: (team: Team) => void;
 }
 
 const formatDate = (value: string): string =>
@@ -32,7 +33,7 @@ const handleKeyboardActivation = (event: KeyboardEvent<HTMLElement>): void => {
   }
 };
 
-export function TeamCard({ team, onEditTeam }: TeamCardProps): ReactElement {
+export function TeamCard({ team, onEditTeam, onManageMembers }: TeamCardProps): ReactElement {
   const membersQuery = useTeamMembers(team.id);
   const members = membersQuery.data ?? [];
   const leadMember = team.leadId === null ? undefined : members.find((member) => member.userId === team.leadId);
@@ -40,6 +41,11 @@ export function TeamCard({ team, onEditTeam }: TeamCardProps): ReactElement {
   const handleEdit = (event: MouseEvent<HTMLButtonElement>): void => {
     event.stopPropagation();
     onEditTeam(team);
+  };
+
+  const handleManageMembers = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.stopPropagation();
+    onManageMembers(team);
   };
 
   return (
@@ -103,6 +109,9 @@ export function TeamCard({ team, onEditTeam }: TeamCardProps): ReactElement {
               <dd className="text-right font-medium text-foreground">{formatDate(team.updatedAt)}</dd>
             </div>
           </dl>
+          <Button leftIcon={<UsersRound aria-hidden="true" className="h-4 w-4" />} type="button" variant="neutral" onClick={handleManageMembers}>
+            Manage Members
+          </Button>
         </CardContent>
       </Card>
     </motion.article>

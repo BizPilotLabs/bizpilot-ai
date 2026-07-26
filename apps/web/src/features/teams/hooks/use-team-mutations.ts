@@ -3,6 +3,10 @@ import { teamService } from "../services";
 import type { AddTeamMemberVariables, CreateTeamInput, Team, TeamListResult, TeamMember, RemoveTeamMemberVariables, UpdateTeamVariables } from "../types";
 import { teamQueryKeys } from "./team-query-keys";
 
+interface TeamMembersSnapshotContext {
+  previousMembers: TeamMember[] | undefined;
+}
+
 const replaceTeamInList = (current: TeamListResult | undefined, team: Team): TeamListResult | undefined => {
   if (current === undefined) {
     return current;
@@ -32,6 +36,18 @@ const removeTeamMember = (current: TeamMember[] | undefined, userId: string): Te
   }
 
   return current.filter((member) => member.userId !== userId);
+};
+
+const snapshotTeamMembers = (teamId: string, queryClient: ReturnType<typeof useQueryClient>): TeamMembersSnapshotContext => ({
+  previousMembers: queryClient.getQueryData<TeamMember[]>(teamQueryKeys.teamMembers(teamId))
+});
+
+const restoreTeamMembers = (teamId: string, queryClient: ReturnType<typeof useQueryClient>, context: TeamMembersSnapshotContext | undefined): void => {
+  if (context === undefined) {
+    return;
+  }
+
+  queryClient.setQueryData(teamQueryKeys.teamMembers(teamId), context.previousMembers);
 };
 
 export function useCreateTeam() {
@@ -77,9 +93,26 @@ export function useAddTeamMember() {
 
   return useMutation({
     mutationFn: ({ teamId, data }: AddTeamMemberVariables) => teamService.addTeamMember(teamId, data),
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: teamQueryKeys.teamMembers(variables.teamId) });
+      const snapshot = snapshotTeamMembers(variables.teamId, queryClient);
+
+      if (variables.optimisticMember !== undefined) {
+        queryClient.setQueryData<TeamMember[]>(teamQueryKeys.teamMembers(variables.teamId), (current) => appendTeamMember(current, variables.optimisticMember as TeamMember));
+      }
+
+      return snapshot;
+    },
+    onError: (_error, variables, context) => {
+      restoreTeamMembers(variables.teamId, queryClient, context);
+    },
     onSuccess: (member, variables) => {
       queryClient.setQueryData<TeamMember[]>(teamQueryKeys.teamMembers(variables.teamId), (current) => appendTeamMember(current, member));
-      void queryClient.invalidateQueries({ queryKey: teamQueryKeys.teamMembers(variables.teamId) });
+    },
+    onSettled: (_data, _error, variables) => {
+      if (variables !== undefined) {
+        void queryClient.invalidateQueries({ queryKey: teamQueryKeys.teamMembers(variables.teamId) });
+      }
     }
   });
 }
@@ -89,9 +122,22 @@ export function useRemoveTeamMember() {
 
   return useMutation({
     mutationFn: ({ teamId, userId }: RemoveTeamMemberVariables) => teamService.removeTeamMember(teamId, userId),
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: teamQueryKeys.teamMembers(variables.teamId) });
+      const snapshot = snapshotTeamMembers(variables.teamId, queryClient);
+      queryClient.setQueryData<TeamMember[]>(teamQueryKeys.teamMembers(variables.teamId), (current) => removeTeamMember(current, variables.userId));
+      return snapshot;
+    },
+    onError: (_error, variables, context) => {
+      restoreTeamMembers(variables.teamId, queryClient, context);
+    },
     onSuccess: (_result, variables) => {
       queryClient.setQueryData<TeamMember[]>(teamQueryKeys.teamMembers(variables.teamId), (current) => removeTeamMember(current, variables.userId));
-      void queryClient.invalidateQueries({ queryKey: teamQueryKeys.teamMembers(variables.teamId) });
+    },
+    onSettled: (_data, _error, variables) => {
+      if (variables !== undefined) {
+        void queryClient.invalidateQueries({ queryKey: teamQueryKeys.teamMembers(variables.teamId) });
+      }
     }
   });
 }
