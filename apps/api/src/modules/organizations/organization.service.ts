@@ -42,7 +42,7 @@ const hasOrganizationManagePermission = (user: OrganizationUser): boolean => {
       return true;
     }
 
-    return role.permissions.some(({ permission }) => permission.deletedAt === null && permission.key === "organizations.manage");
+    return role.permissions.some(({ permission }) => permission.deletedAt === null && (permission.key === "organizations.update" || permission.key === "organizations.manage"));
   });
 };
 

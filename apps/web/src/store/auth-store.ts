@@ -20,6 +20,7 @@ interface AuthState {
   setSession: (session: SetSessionInput) => void;
   setAccessToken: (accessToken: string) => void;
   setPrincipal: (principal: AuthPrincipal) => void;
+  setOrganization: (organization: AuthOrganization) => void;
   setStatus: (status: AuthenticationStatus) => void;
   clearSession: () => void;
 }
@@ -46,6 +47,9 @@ export const useAuthStore = create<AuthState>()(
       setPrincipal: ({ user, organization, roles, permissions }) => {
         set({ user, organization, roles, permissions, status: "authenticated", isAuthenticated: true, isLoading: false });
       },
+      setOrganization: (organization) => {
+        set({ organization });
+      },
       setStatus: (status) => {
         set({ status, isLoading: toIsLoading(status), isAuthenticated: status === "authenticated" });
       },
@@ -68,4 +72,5 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
 

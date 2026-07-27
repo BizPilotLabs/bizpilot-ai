@@ -3,6 +3,7 @@ import { Router, type NextFunction, type Request, type RequestHandler, type Resp
 import { AppError } from "../../core/errors/index.js";
 import { authService } from "../auth/auth.service.js";
 import type { AuthenticatedRequest } from "../auth/auth.types.js";
+import { requirePermission } from "../rbac/index.js";
 import { organizationController } from "./organization.controller.js";
 import type { OrganizationRequest } from "./organization.types.js";
 
@@ -39,17 +40,20 @@ export const organizationRoutes: ExpressRouter = Router();
 organizationRoutes.get(
   "/me",
   authenticate,
+  requirePermission("organizations.read"),
   authenticatedAsyncHandler((request, response) => organizationController.getCurrentOrganization(request, response)),
 );
 
 organizationRoutes.put(
   "/me",
   authenticate,
+  requirePermission("organizations.update"),
   authenticatedAsyncHandler((request, response) => organizationController.updateCurrentOrganization(request, response)),
 );
 
 organizationRoutes.patch(
   "/me/settings",
   authenticate,
+  requirePermission("organizations.update"),
   authenticatedAsyncHandler((request, response) => organizationController.updateCurrentOrganizationSettings(request, response)),
 );

@@ -5,6 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { appNavigation, type NavigationItem } from "./navigation";
 import { Button, Tooltip } from "@/components/ui";
 import { transition } from "@/lib";
+import { useAuthStore } from "@/store";
 import { cn } from "@/utils";
 
 export interface SidebarProps {
@@ -21,6 +22,25 @@ interface SidebarContentProps {
 }
 
 const isActiveItem = (pathname: string, item: NavigationItem): boolean => pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+const isElevated = (roleNames: string[]): boolean => roleNames.includes("Owner") || roleNames.includes("Admin");
+
+const canViewItem = (item: NavigationItem, roleNames: string[], permissionKeys: string[]): boolean => {
+  if (item.permission === undefined) {
+    return true;
+  }
+
+  return isElevated(roleNames) || permissionKeys.includes(item.permission);
+};
+
+const filterNavigation = (items: NavigationItem[], roleNames: string[], permissionKeys: string[]): NavigationItem[] => {
+  return items
+    .map((item) => {
+      const children = item.children ? filterNavigation(item.children, roleNames, permissionKeys) : undefined;
+      return children === undefined ? { ...item } : { ...item, children };
+    })
+    .filter((item) => canViewItem(item, roleNames, permissionKeys) || (item.children?.length ?? 0) > 0);
+};
 
 function NavigationLink({ item, collapsed, pathname, level = 0, onNavigate }: { item: NavigationItem; collapsed: boolean; pathname: string; level?: number; onNavigate?: (() => void) | undefined }): ReactElement {
   const [open, setOpen] = useState(true);
@@ -70,7 +90,11 @@ function NavigationLink({ item, collapsed, pathname, level = 0, onNavigate }: { 
 
 function SidebarContent({ collapsed, onCollapsedChange, onNavigate }: SidebarContentProps): ReactElement {
   const location = useLocation();
-  const navigation = useMemo(() => appNavigation, []);
+  const roles = useAuthStore((state) => state.roles);
+  const permissions = useAuthStore((state) => state.permissions);
+  const roleNames = useMemo(() => roles.map((role) => role.name), [roles]);
+  const permissionKeys = useMemo(() => permissions.map((permission) => permission.key), [permissions]);
+  const navigation = useMemo(() => filterNavigation(appNavigation, roleNames, permissionKeys), [permissionKeys, roleNames]);
 
   return (
     <div className="flex h-full flex-col bg-surface-raised/80 backdrop-blur-xl">
@@ -129,4 +153,5 @@ export function Sidebar({ collapsed, onCollapsedChange, mobileOpen, onMobileOpen
     </>
   );
 }
+
 

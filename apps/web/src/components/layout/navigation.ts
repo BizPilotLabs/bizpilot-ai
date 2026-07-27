@@ -4,6 +4,7 @@ import {
   FolderKanban,
   LayoutDashboard,
   Settings,
+  ShieldCheck,
   SquareCheckBig,
   Users,
   UsersRound,
@@ -14,6 +15,7 @@ export interface NavigationItem {
   label: string;
   href: string;
   icon: LucideIcon;
+  permission?: string;
   children?: NavigationItem[];
 }
 
@@ -23,14 +25,15 @@ export const appNavigation: NavigationItem[] = [
   { label: "Tasks", href: "/app/tasks", icon: SquareCheckBig },
   { label: "Teams", href: "/app/teams", icon: UsersRound },
   { label: "Users", href: "/app/users", icon: Users },
+  { label: "Roles", href: "/app/roles", icon: ShieldCheck, permission: "roles.read" },
   { label: "Organizations", href: "/app/organizations", icon: Building2 },
   { label: "Activity", href: "/app/activity", icon: Activity },
   { label: "Settings", href: "/app/settings", icon: Settings }
 ];
 
-export const findNavigationItem = (pathname: string): NavigationItem | undefined => {
-  const visit = (items: NavigationItem[]): NavigationItem | undefined => {
-    for (const item of items) {
+export const findNavigationItem = (pathname: string, items: NavigationItem[] = appNavigation): NavigationItem | undefined => {
+  const visit = (navigationItems: NavigationItem[]): NavigationItem | undefined => {
+    for (const item of navigationItems) {
       if (pathname === item.href || pathname.startsWith(`${item.href}/`)) {
         return item;
       }
@@ -44,6 +47,5 @@ export const findNavigationItem = (pathname: string): NavigationItem | undefined
     return undefined;
   };
 
-  return visit(appNavigation);
+  return visit(items);
 };
-

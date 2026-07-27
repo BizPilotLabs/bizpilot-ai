@@ -24,6 +24,7 @@ export interface RoleResponse {
   name: string;
   description: string | null;
   isSystem: boolean;
+  userCount: number;
   createdAt: Date;
   updatedAt: Date;
   permissions: PermissionResponse[];
@@ -62,6 +63,9 @@ export interface RoleWithPermissions extends Role {
   permissions: {
     permission: Permission;
   }[];
+  _count: {
+    users: number;
+  };
 }
 
 export interface RbacUserRoleRecord {

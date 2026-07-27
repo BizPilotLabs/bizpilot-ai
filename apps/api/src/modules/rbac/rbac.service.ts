@@ -23,6 +23,7 @@ const permissionCatalog = [
   ["users.delete", "Delete users", "users", "delete"],
   ["organizations.read", "Read organizations", "organizations", "read"],
   ["organizations.update", "Update organizations", "organizations", "update"],
+  ["organizations.manage", "Manage organizations", "organizations", "manage"],
   ["roles.read", "Read roles", "roles", "read"],
   ["roles.create", "Create roles", "roles", "create"],
   ["roles.update", "Update roles", "roles", "update"],
@@ -35,6 +36,18 @@ const permissionCatalog = [
   ["tasks.create", "Create tasks", "tasks", "create"],
   ["tasks.update", "Update tasks", "tasks", "update"],
   ["tasks.delete", "Delete tasks", "tasks", "delete"],
+  ["teams.read", "Read teams", "teams", "read"],
+  ["teams.create", "Create teams", "teams", "create"],
+  ["teams.update", "Update teams", "teams", "update"],
+  ["teams.delete", "Delete teams", "teams", "delete"],
+  ["comments.read", "Read comments", "comments", "read"],
+  ["comments.create", "Create comments", "comments", "create"],
+  ["comments.update", "Update comments", "comments", "update"],
+  ["comments.delete", "Delete comments", "comments", "delete"],
+  ["attachments.read", "Read attachments", "attachments", "read"],
+  ["attachments.create", "Create attachments", "attachments", "create"],
+  ["attachments.delete", "Delete attachments", "attachments", "delete"],
+  ["activities.read", "Read activities", "activities", "read"],
   ["crm.read", "Read CRM", "crm", "read"],
   ["crm.create", "Create CRM records", "crm", "create"],
   ["crm.update", "Update CRM records", "crm", "update"],
@@ -43,6 +56,8 @@ const permissionCatalog = [
   ["billing.update", "Update billing", "billing", "update"],
   ["ai.use", "Use AI", "ai", "use"],
 ] as const;
+
+const systemRoleNames = new Set(["Owner", "Admin", "Manager", "Member"]);
 
 const permissions: PermissionCatalogItem[] = permissionCatalog.map(([key, name, resource, action]) => ({
   key,
@@ -64,12 +79,18 @@ const managerPermissionKeys = [
   "tasks.read",
   "tasks.create",
   "tasks.update",
+  "teams.read",
+  "comments.read",
+  "comments.create",
+  "attachments.read",
+  "attachments.create",
+  "activities.read",
   "crm.read",
   "crm.create",
   "crm.update",
   "ai.use",
 ] as const;
-const memberPermissionKeys = ["users.read", "organizations.read", "projects.read", "tasks.read", "crm.read", "ai.use"] as const;
+const memberPermissionKeys = ["users.read", "organizations.read", "projects.read", "tasks.read", "teams.read", "comments.read", "attachments.read", "crm.read", "ai.use"] as const;
 
 const defaultRolePermissions = {
   Owner: ownerPermissionKeys,
@@ -100,6 +121,7 @@ const toRoleResponse = (role: RoleWithPermissions): RoleResponse => ({
   name: role.name,
   description: role.description,
   isSystem: role.isSystem,
+  userCount: role._count.users,
   createdAt: role.createdAt,
   updatedAt: role.updatedAt,
   permissions: role.permissions
@@ -110,6 +132,11 @@ const toRoleResponse = (role: RoleWithPermissions): RoleResponse => ({
 
 const isOwnerOrAdmin = (user: RbacUserRecord): boolean => {
   return user.roles.some(({ role }) => role.deletedAt === null && (role.name === "Owner" || role.name === "Admin"));
+};
+
+const isReservedSystemRoleName = (name: string): boolean => {
+  const normalized = name.trim().toLowerCase();
+  return [...systemRoleNames].some((roleName) => roleName.toLowerCase() === normalized);
 };
 
 export class RbacService {
@@ -129,6 +156,10 @@ export class RbacService {
     await this.prepareOrganization(input.organizationId);
     await this.assertCanManageRoles(input.actorUserId, input.organizationId);
     await this.assertPermissionsExist(input.data.permissionIds ?? []);
+
+    if (isReservedSystemRoleName(input.data.name)) {
+      throw new AppError({ statusCode: 400, message: "System role names are reserved.", code: "ROLE_SYSTEM_NAME_RESERVED" });
+    }
 
     try {
       const role = await rbacRepository.createRole(input);
@@ -162,7 +193,15 @@ export class RbacService {
   }): Promise<RoleResponse> {
     await this.prepareOrganization(input.organizationId);
     await this.assertCanManageRoles(input.actorUserId, input.organizationId);
-    await this.assertRoleExists(input.roleId, input.organizationId);
+    const existingRole = await this.assertRoleExists(input.roleId, input.organizationId);
+
+    if (existingRole.isSystem) {
+      throw new AppError({ statusCode: 400, message: "System roles cannot be edited.", code: "ROLE_SYSTEM_UPDATE_FORBIDDEN" });
+    }
+
+    if (input.data.name !== undefined && isReservedSystemRoleName(input.data.name)) {
+      throw new AppError({ statusCode: 400, message: "System role names are reserved.", code: "ROLE_SYSTEM_NAME_RESERVED" });
+    }
 
     try {
       const role = await rbacRepository.updateRole(input);
@@ -184,6 +223,12 @@ export class RbacService {
       throw new AppError({ statusCode: 400, message: "System roles cannot be deleted.", code: "ROLE_SYSTEM_DELETE_FORBIDDEN" });
     }
 
+    const assignedUserCount = await rbacRepository.countUsersAssignedToRole(input.roleId);
+
+    if (assignedUserCount > 0) {
+      throw new AppError({ statusCode: 409, message: "Role is assigned to users and cannot be deleted.", code: "ROLE_ASSIGNED_DELETE_FORBIDDEN" });
+    }
+
     await rbacRepository.deleteRole(input);
   }
 
@@ -202,10 +247,15 @@ export class RbacService {
   }): Promise<RoleResponse> {
     await this.prepareOrganization(input.organizationId);
     await this.assertCanManageRoles(input.actorUserId, input.organizationId);
-    await this.assertRoleExists(input.roleId, input.organizationId);
+    const role = await this.assertRoleExists(input.roleId, input.organizationId);
+
+    if (role.isSystem) {
+      throw new AppError({ statusCode: 400, message: "System role permissions cannot be edited.", code: "ROLE_SYSTEM_PERMISSIONS_FORBIDDEN" });
+    }
+
     await this.assertPermissionsExist(input.data.permissionIds);
-    const role = await rbacRepository.updateRolePermissions(input);
-    return toRoleResponse(role);
+    const updatedRole = await rbacRepository.updateRolePermissions(input);
+    return toRoleResponse(updatedRole);
   }
 
   public async getUserRoles(input: { actorUserId: string; organizationId: string; targetUserId: string }): Promise<UserRoleResponse> {

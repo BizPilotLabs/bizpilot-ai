@@ -18,6 +18,11 @@ const roleInclude = {
       permission: true,
     },
   },
+  _count: {
+    select: {
+      users: true,
+    },
+  },
 } satisfies Prisma.RoleInclude;
 
 const userInclude = {
@@ -144,6 +149,17 @@ export class RbacRepository {
     return prisma.permission.findMany({
       where: { deletedAt: null },
       orderBy: [{ resource: "asc" }, { action: "asc" }],
+    });
+  }
+
+  public async countUsersAssignedToRole(roleId: string): Promise<number> {
+    return prisma.userRole.count({
+      where: {
+        roleId,
+        user: {
+          deletedAt: null,
+        },
+      },
     });
   }
 

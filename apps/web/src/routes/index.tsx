@@ -3,7 +3,9 @@ import { AppShell } from "@/app/app-shell";
 import { AppLayout } from "@/components/layout";
 import { LoginPage, RegisterOrganizationPage, ForgotPasswordPage, ResetPasswordPage } from "@/features/auth";
 import { DashboardPage } from "@/features/dashboard";
+import { OrganizationPage } from "@/features/organizations";
 import { ProjectsPage } from "@/features/projects";
+import { RolesPage } from "@/features/rbac";
 import { TasksPage } from "@/features/tasks";
 import { TeamsPage } from "@/features/teams";
 import { UsersPage } from "@/features/users";
@@ -46,7 +48,8 @@ export const appRouter = createBrowserRouter([
                   { path: "tasks", element: <TasksPage /> },
                   { path: "teams", element: <TeamsPage /> },
                   { path: "users", element: <UsersPage /> },
-                  { path: "organizations", element: <AppPlaceholderRoute title="Organizations" /> },
+                  { path: "roles", element: <RolesPage /> },
+                  { path: "organizations", element: <OrganizationPage /> },
                   { path: "activity", element: <AppPlaceholderRoute title="Activity" /> },
                   { path: "settings", element: <AppPlaceholderRoute title="Settings" /> }
                 ]
@@ -61,4 +64,6 @@ export const appRouter = createBrowserRouter([
 ]);
 
 export { routePaths } from "./route-paths";
+
+
 

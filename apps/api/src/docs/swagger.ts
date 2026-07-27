@@ -75,7 +75,7 @@ const schemas = {
   Pagination: entity({ page: { type: "integer" }, limit: { type: "integer" }, total: { type: "integer" }, totalPages: { type: "integer" } }),
   Organization: entity({ id: uuid, name: { type: "string" }, slug: { type: "string" }, logo: nullableString, timezone: { type: "string" }, country: nullableString, currency: { type: "string" }, plan: { type: "string", enum: ["FREE", "STARTER", "PROFESSIONAL", "ENTERPRISE"] }, createdAt: dateTime, updatedAt: dateTime }),
   User: entity({ id: uuid, email: { type: "string", format: "email" }, firstName: { type: "string" }, lastName: { type: "string" }, avatar: nullableString, phone: nullableString, status: { type: "string", enum: ["INVITED", "ACTIVE", "SUSPENDED", "DISABLED"] }, emailVerified: { type: "boolean" }, lastLoginAt: { type: ["string", "null"], format: "date-time" }, organizationId: uuid, roles: { type: "array", items: { $ref: "#/components/schemas/Role" } }, createdAt: dateTime, updatedAt: dateTime }),
-  Role: entity({ id: uuid, name: { type: "string" }, description: nullableString, isSystem: { type: "boolean" }, permissions: { type: "array", items: { $ref: "#/components/schemas/Permission" } } }),
+  Role: entity({ id: uuid, name: { type: "string" }, description: nullableString, isSystem: { type: "boolean" }, userCount: { type: "integer" }, permissions: { type: "array", items: { $ref: "#/components/schemas/Permission" } } }),
   Permission: entity({ id: uuid, key: { type: "string" }, name: { type: "string" }, description: nullableString, resource: { type: "string" }, action: { type: "string" } }),
   Project: entity({ id: uuid, organizationId: uuid, name: { type: "string" }, description: nullableString, status: { type: "string", enum: ["PLANNED", "ACTIVE", "ON_HOLD", "COMPLETED", "CANCELLED"] }, startDate: { type: ["string", "null"], format: "date-time" }, endDate: { type: ["string", "null"], format: "date-time" }, color: nullableString, archived: { type: "boolean" }, createdById: uuid, createdAt: dateTime, updatedAt: dateTime }),
   Task: entity({ id: uuid, projectId: uuid, title: { type: "string" }, description: nullableString, status: { type: "string", enum: ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE", "CANCELLED"] }, priority: { type: "string", enum: ["LOW", "MEDIUM", "HIGH", "CRITICAL"] }, dueDate: { type: ["string", "null"], format: "date-time" }, assigneeId: { type: ["string", "null"], format: "uuid" }, createdById: uuid, estimatedHours: nullableString, actualHours: nullableString, archived: { type: "boolean" }, createdAt: dateTime, updatedAt: dateTime }),
@@ -167,4 +167,5 @@ export const openApiSpec = swaggerJSDoc(swaggerOptions) as Schema;
 export const setupSwaggerDocs = (app: Express): void => {
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiSpec, { explorer: true, customSiteTitle: "BizPilot AI API Docs" }));
 };
+
 
