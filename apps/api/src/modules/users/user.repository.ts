@@ -1,7 +1,7 @@
-import type { Prisma } from "@prisma/client";
+import type { Prisma, Role } from "@prisma/client";
 
 import { prisma } from "../../core/database/index.js";
-import type { RequestMetadata, UserListQuery, UserRecord, UserUpdateInput } from "./user.types.js";
+import type { RequestMetadata, UserCreateInput, UserListQuery, UserRecord, UserUpdateInput } from "./user.types.js";
 
 const userInclude = {
   roles: {
@@ -87,6 +87,74 @@ export class UserRepository {
     });
 
     return user as UserRecord | null;
+  }
+
+  public async findUserByEmailInOrganization(input: { email: string; organizationId: string }): Promise<UserRecord | null> {
+    const user = await prisma.user.findFirst({
+      where: {
+        email: input.email,
+        organizationId: input.organizationId,
+        deletedAt: null,
+      },
+      include: userInclude,
+    });
+
+    return user as UserRecord | null;
+  }
+
+  public async findRolesByIdsInOrganization(input: { roleIds: string[]; organizationId: string }): Promise<Role[]> {
+    return prisma.role.findMany({
+      where: {
+        id: { in: input.roleIds },
+        organizationId: input.organizationId,
+        deletedAt: null,
+      },
+    });
+  }
+
+  public async createUser(input: {
+    organizationId: string;
+    actorUserId: string;
+    data: UserCreateInput;
+    passwordHash: string;
+    metadata: RequestMetadata;
+  }): Promise<UserRecord> {
+    return prisma.$transaction(async (transaction) => {
+      const user = await transaction.user.create({
+        data: {
+          organizationId: input.organizationId,
+          email: input.data.email,
+          passwordHash: input.passwordHash,
+          firstName: input.data.firstName,
+          lastName: input.data.lastName,
+          status: "ACTIVE",
+          roles: {
+            createMany: {
+              data: input.data.roleIds.map((roleId) => ({ roleId })),
+              skipDuplicates: true,
+            },
+          },
+        },
+        include: userInclude,
+      });
+
+      await transaction.auditLog.create({
+        data: {
+          userId: input.actorUserId,
+          organizationId: input.organizationId,
+          action: "user.create",
+          resource: "user",
+          ipAddress: input.metadata.ipAddress ?? null,
+          userAgent: input.metadata.userAgent ?? null,
+          metadata: {
+            targetUserId: user.id,
+            roleIds: input.data.roleIds,
+          },
+        },
+      });
+
+      return user as UserRecord;
+    });
   }
 
   public async updateUser(input: {

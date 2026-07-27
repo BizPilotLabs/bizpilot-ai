@@ -41,6 +41,14 @@ export interface UserListResult {
   };
 }
 
+export interface UserCreateInput {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  roleIds: string[];
+}
+
 export interface UserUpdateInput {
   firstName?: string | undefined;
   lastName?: string | undefined;

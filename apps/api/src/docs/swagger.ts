@@ -90,6 +90,7 @@ const schemas = {
   LoginRequest: entity({ email: { type: "string", format: "email" }, password: { type: "string", format: "password" } }),
   OrganizationUpdateRequest: entity({ name: { type: "string" }, logo: nullableString, timezone: { type: "string" }, country: nullableString, currency: { type: "string" } }),
   OrganizationSettingsRequest: entity({ timezone: { type: "string" }, currency: { type: "string" } }),
+  UserCreateRequest: entity({ firstName: { type: "string", minLength: 1, maxLength: 100 }, lastName: { type: "string", minLength: 1, maxLength: 100 }, email: { type: "string", format: "email", maxLength: 320 }, password: { type: "string", format: "password", minLength: 12, maxLength: 72 }, roleIds: { type: "array", minItems: 1, maxItems: 20, items: uuid } }),
   UserUpdateRequest: entity({ firstName: { type: "string" }, lastName: { type: "string" }, avatar: nullableString }),
   RoleCreateRequest: entity({ name: { type: "string" }, description: nullableString, permissionIds: { type: "array", items: uuid } }),
   RoleUpdateRequest: entity({ name: { type: "string" }, description: nullableString }),
@@ -130,7 +131,7 @@ const openApiDefinition = {
     "/auth/me": { get: securedGet("Authentication", "Current principal", ok({ $ref: "#/components/schemas/AuthPrincipal" })) },
     "/organizations/me": { get: securedGet("Organizations", "Current organization", wrapped("organization", "#/components/schemas/Organization")), put: securedPatch("Organizations", "Update organization", "#/components/schemas/OrganizationUpdateRequest", wrapped("organization", "#/components/schemas/Organization"), []) },
     "/organizations/me/settings": { patch: securedPatch("Organizations", "Update organization settings", "#/components/schemas/OrganizationSettingsRequest", wrapped("organization", "#/components/schemas/Organization"), []) },
-    "/users": { get: securedGet("Users", "List users", list("users", "#/components/schemas/User"), [...pageParams, { name: "search", in: "query", schema: { type: "string" } }]) },
+    "/users": { get: securedGet("Users", "List users", list("users", "#/components/schemas/User"), [...pageParams, { name: "search", in: "query", schema: { type: "string" } }]), post: securedPost("Users", "Create user", "#/components/schemas/UserCreateRequest", wrapped("user", "#/components/schemas/User")) },
     "/users/{id}": { get: securedGet("Users", "Get user", wrapped("user", "#/components/schemas/User"), [id("id")]), patch: securedPatch("Users", "Update user", "#/components/schemas/UserUpdateRequest", wrapped("user", "#/components/schemas/User"), [id("id")]), delete: securedDelete("Users", "Delete user", [id("id")]) },
     "/roles": { get: securedGet("RBAC", "List roles", ok(entity({ roles: { type: "array", items: { $ref: "#/components/schemas/Role" } } }))), post: securedPost("RBAC", "Create role", "#/components/schemas/RoleCreateRequest", wrapped("role", "#/components/schemas/Role")) },
     "/roles/{id}": { get: securedGet("RBAC", "Get role", wrapped("role", "#/components/schemas/Role"), [id("id")]), patch: securedPatch("RBAC", "Update role", "#/components/schemas/RoleUpdateRequest", wrapped("role", "#/components/schemas/Role"), [id("id")]), delete: securedDelete("RBAC", "Delete role", [id("id")]) },
@@ -166,3 +167,4 @@ export const openApiSpec = swaggerJSDoc(swaggerOptions) as Schema;
 export const setupSwaggerDocs = (app: Express): void => {
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiSpec, { explorer: true, customSiteTitle: "BizPilot AI API Docs" }));
 };
+

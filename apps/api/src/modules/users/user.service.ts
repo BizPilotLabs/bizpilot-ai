@@ -1,6 +1,19 @@
+import bcrypt from "bcrypt";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+
 import { AppError } from "../../core/errors/index.js";
 import { userRepository } from "./user.repository.js";
-import type { RequestMetadata, UserListQuery, UserListResult, UserProfile, UserRecord, UserUpdateInput } from "./user.types.js";
+import type {
+  RequestMetadata,
+  UserCreateInput,
+  UserListQuery,
+  UserListResult,
+  UserProfile,
+  UserRecord,
+  UserUpdateInput,
+} from "./user.types.js";
+
+const passwordHashRounds = 12;
 
 const toUserProfile = (user: UserRecord): UserProfile => ({
   id: user.id,
@@ -45,6 +58,82 @@ export class UserService {
         totalPages,
       },
     };
+  }
+
+  public async createUser(input: {
+    requesterUserId: string;
+    organizationId: string;
+    data: UserCreateInput;
+    metadata: RequestMetadata;
+  }): Promise<UserProfile> {
+    const requester = await userRepository.findUserByIdInOrganization({
+      userId: input.requesterUserId,
+      organizationId: input.organizationId,
+    });
+
+    if (requester === null) {
+      throw new AppError({ statusCode: 404, message: "User not found.", code: "USER_NOT_FOUND" });
+    }
+
+    if (!isOwnerOrAdmin(requester)) {
+      throw new AppError({
+        statusCode: 403,
+        message: "You do not have permission to create users.",
+        code: "USER_PERMISSION_DENIED",
+      });
+    }
+
+    const existingUser = await userRepository.findUserByEmailInOrganization({
+      email: input.data.email,
+      organizationId: input.organizationId,
+    });
+
+    if (existingUser !== null) {
+      throw new AppError({ statusCode: 409, message: "User email already exists.", code: "USER_EMAIL_CONFLICT" });
+    }
+
+    const uniqueRoleIds = [...new Set(input.data.roleIds)];
+    const roles = await userRepository.findRolesByIdsInOrganization({
+      roleIds: uniqueRoleIds,
+      organizationId: input.organizationId,
+    });
+
+    if (roles.length !== uniqueRoleIds.length) {
+      throw new AppError({ statusCode: 400, message: "One or more roles are invalid.", code: "ROLE_INVALID_ASSIGNMENT" });
+    }
+
+    const assignsOwnerRole = roles.some((role) => role.name === "Owner");
+
+    if (assignsOwnerRole && !isOwner(requester)) {
+      throw new AppError({
+        statusCode: 403,
+        message: "Only Owner can assign the Owner role.",
+        code: "USER_OWNER_ROLE_ASSIGNMENT_DENIED",
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(input.data.password, passwordHashRounds);
+
+    try {
+      const createdUser = await userRepository.createUser({
+        organizationId: input.organizationId,
+        actorUserId: requester.id,
+        data: {
+          ...input.data,
+          roleIds: uniqueRoleIds,
+        },
+        passwordHash,
+        metadata: input.metadata,
+      });
+
+      return toUserProfile(createdUser);
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new AppError({ statusCode: 409, message: "User email already exists.", code: "USER_EMAIL_CONFLICT" });
+      }
+
+      throw error;
+    }
   }
 
   public async getUser(input: { requesterUserId: string; organizationId: string; targetUserId: string }): Promise<UserProfile> {

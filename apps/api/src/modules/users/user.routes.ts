@@ -3,6 +3,7 @@ import { Router, type NextFunction, type Request, type RequestHandler, type Resp
 import { AppError } from "../../core/errors/index.js";
 import { authService } from "../auth/auth.service.js";
 import type { AuthenticatedRequest } from "../auth/auth.types.js";
+import { requirePermission } from "../rbac/index.js";
 import { userController } from "./user.controller.js";
 import type { UserRequest } from "./user.types.js";
 
@@ -35,6 +36,7 @@ const authenticate: RequestHandler = (request: Request, _response: Response, nex
 export const userRoutes: ExpressRouter = Router();
 
 userRoutes.get("/", authenticate, authenticatedAsyncHandler((request, response) => userController.listUsers(request, response)));
+userRoutes.post("/", authenticate, requirePermission("users.create"), authenticatedAsyncHandler((request, response) => userController.createUser(request, response)));
 userRoutes.get("/:id", authenticate, authenticatedAsyncHandler((request, response) => userController.getUser(request, response)));
 userRoutes.patch("/:id", authenticate, authenticatedAsyncHandler((request, response) => userController.updateUser(request, response)));
 userRoutes.delete("/:id", authenticate, authenticatedAsyncHandler((request, response) => userController.deleteUser(request, response)));

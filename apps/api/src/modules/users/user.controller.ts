@@ -1,6 +1,6 @@
 import type { Response } from "express";
 
-import { listUsersQuerySchema, updateUserSchema, userIdParamsSchema } from "./user.schema.js";
+import { createUserSchema, listUsersQuerySchema, updateUserSchema, userIdParamsSchema } from "./user.schema.js";
 import { userService } from "./user.service.js";
 import type { RequestMetadata, UserRequest } from "./user.types.js";
 
@@ -32,6 +32,18 @@ export class UserController {
     });
 
     sendSuccess(response, 200, result);
+  }
+
+  public async createUser(request: UserRequest, response: Response): Promise<void> {
+    const input = createUserSchema.parse(request.body);
+    const user = await userService.createUser({
+      requesterUserId: request.auth.userId,
+      organizationId: request.auth.organizationId,
+      data: input,
+      metadata: toMetadata(request),
+    });
+
+    sendSuccess(response, 201, { user });
   }
 
   public async getUser(request: UserRequest, response: Response): Promise<void> {
