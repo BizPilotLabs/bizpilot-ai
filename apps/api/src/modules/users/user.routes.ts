@@ -35,8 +35,8 @@ const authenticate: RequestHandler = (request: Request, _response: Response, nex
 
 export const userRoutes: ExpressRouter = Router();
 
-userRoutes.get("/", authenticate, authenticatedAsyncHandler((request, response) => userController.listUsers(request, response)));
+userRoutes.get("/", authenticate, requirePermission("users.read"), authenticatedAsyncHandler((request, response) => userController.listUsers(request, response)));
 userRoutes.post("/", authenticate, requirePermission("users.create"), authenticatedAsyncHandler((request, response) => userController.createUser(request, response)));
-userRoutes.get("/:id", authenticate, authenticatedAsyncHandler((request, response) => userController.getUser(request, response)));
+userRoutes.get("/:id", authenticate, requirePermission("users.read"), authenticatedAsyncHandler((request, response) => userController.getUser(request, response)));
 userRoutes.patch("/:id", authenticate, authenticatedAsyncHandler((request, response) => userController.updateUser(request, response)));
-userRoutes.delete("/:id", authenticate, authenticatedAsyncHandler((request, response) => userController.deleteUser(request, response)));
+userRoutes.delete("/:id", authenticate, requirePermission("users.delete"), authenticatedAsyncHandler((request, response) => userController.deleteUser(request, response)));
