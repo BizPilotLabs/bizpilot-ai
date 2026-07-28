@@ -9,7 +9,7 @@ export const allowedAttachmentMimeTypes = [
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "text/plain",
   "image/png",
-  "image/jpeg",
+  "image/jpeg"
 ] as const;
 
 const allowedMimeTypeSchema = z.enum(allowedAttachmentMimeTypes);
@@ -17,24 +17,22 @@ const allowedMimeTypeSchema = z.enum(allowedAttachmentMimeTypes);
 export const listAttachmentsQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
-  sort: z.enum(["asc", "desc"]).default("desc"),
+  sort: z.enum(["asc", "desc"]).default("desc")
 });
 
 export const taskAttachmentParamsSchema = z.object({
-  taskId: z.string().uuid(),
+  taskId: z.string().uuid()
 });
 
 export const attachmentIdParamsSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().uuid()
 });
 
-export const createAttachmentSchema = z.object({
+export const initializeAttachmentUploadSchema = z.object({
   originalName: z.string().trim().min(1).max(255),
-  storedName: z.string().trim().min(1).max(255),
   mimeType: allowedMimeTypeSchema,
-  fileSize: z.coerce.number().int().positive().max(maximumAttachmentSizeBytes),
-  storagePath: z.string().trim().min(1).max(2048),
+  fileSize: z.coerce.number().int().positive().max(maximumAttachmentSizeBytes)
 });
 
 export type ListAttachmentsQuerySchema = z.infer<typeof listAttachmentsQuerySchema>;
-export type CreateAttachmentSchema = z.infer<typeof createAttachmentSchema>;
+export type InitializeAttachmentUploadSchema = z.infer<typeof initializeAttachmentUploadSchema>;

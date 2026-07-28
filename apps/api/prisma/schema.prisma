@@ -37,6 +37,11 @@ enum TaskPriority {
   CRITICAL
 }
 
+enum AttachmentStatus {
+  PENDING
+  READY
+}
+
 enum UserStatus {
   INVITED
   ACTIVE
@@ -471,17 +476,21 @@ model Comment {
 }
 
 model Attachment {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationId String    @db.Uuid
-  taskId         String    @db.Uuid
-  uploadedBy     String    @db.Uuid
-  originalName   String    @db.VarChar(255)
-  storedName     String    @db.VarChar(255)
-  mimeType       String    @db.VarChar(120)
-  fileSize       Int
-  storagePath    String    @db.VarChar(2048)
-  createdAt      DateTime  @default(now())
-  deletedAt      DateTime?
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId  String           @db.Uuid
+  taskId          String           @db.Uuid
+  uploadedBy      String           @db.Uuid
+  originalName    String           @db.VarChar(255)
+  storedName      String           @db.VarChar(255)
+  mimeType        String           @db.VarChar(120)
+  fileSize        Int
+  storagePath     String           @db.VarChar(2048)
+  provider        String           @default("r2") @db.VarChar(40)
+  status          AttachmentStatus @default(READY)
+  uploadExpiresAt DateTime?
+  finalizedAt     DateTime?
+  createdAt       DateTime         @default(now())
+  deletedAt       DateTime?
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   task         Task         @relation(fields: [taskId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -491,6 +500,8 @@ model Attachment {
   @@index([taskId])
   @@index([uploadedBy])
   @@index([createdAt])
+  @@index([status])
+  @@index([uploadExpiresAt])
   @@index([deletedAt])
   @@map("attachments")
 }

@@ -18,6 +18,24 @@ const environmentSchema = z.object({
   CORS_ORIGIN: z.string().min(1).default("http://localhost:3000"),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
   SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
+  STORAGE_PROVIDER: z.enum(["disabled", "r2"]).default("disabled"),
+  R2_ACCOUNT_ID: z.string().min(1).optional(),
+  R2_ACCESS_KEY_ID: z.string().min(1).optional(),
+  R2_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  R2_BUCKET_NAME: z.string().min(1).optional(),
+  R2_ENDPOINT: z.string().url().optional(),
+  R2_PRESIGNED_UPLOAD_EXPIRES_SECONDS: z.coerce.number().int().positive().max(3600).default(600),
+  R2_PRESIGNED_DOWNLOAD_EXPIRES_SECONDS: z.coerce.number().int().positive().max(3600).default(300),
+}).superRefine((value, context) => {
+  if (value.STORAGE_PROVIDER !== "r2") {
+    return;
+  }
+
+  for (const key of ["R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET_NAME"] as const) {
+    if (value[key] === undefined || value[key]?.trim().length === 0) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: [key], message: `${key} is required when STORAGE_PROVIDER is r2.` });
+    }
+  }
 });
 
 export type Environment = z.infer<typeof environmentSchema>;

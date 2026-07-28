@@ -13,6 +13,8 @@ const authenticatedAsyncHandler = (handler: (request: AttachmentRequest, respons
 export const attachmentRoutes: ExpressRouter = Router();
 
 attachmentRoutes.get("/tasks/:taskId/attachments", authenticate, requirePermission("attachments.read"), authenticatedAsyncHandler((request, response) => attachmentController.listAttachments(request, response)));
-attachmentRoutes.post("/tasks/:taskId/attachments", authenticate, requirePermission("attachments.create"), authenticatedAsyncHandler((request, response) => attachmentController.createAttachment(request, response)));
+attachmentRoutes.post("/tasks/:taskId/attachments", authenticate, requirePermission("attachments.create"), authenticatedAsyncHandler((request, response) => attachmentController.initializeUpload(request, response)));
+attachmentRoutes.post("/attachments/:id/complete", authenticate, requirePermission("attachments.create"), authenticatedAsyncHandler((request, response) => attachmentController.finalizeUpload(request, response)));
 attachmentRoutes.get("/attachments/:id", authenticate, requirePermission("attachments.read"), authenticatedAsyncHandler((request, response) => attachmentController.getAttachment(request, response)));
+attachmentRoutes.get("/attachments/:id/download", authenticate, requirePermission("attachments.read"), authenticatedAsyncHandler((request, response) => attachmentController.authorizeDownload(request, response)));
 attachmentRoutes.delete("/attachments/:id", authenticate, requirePermission("attachments.delete"), authenticatedAsyncHandler((request, response) => attachmentController.deleteAttachment(request, response)));

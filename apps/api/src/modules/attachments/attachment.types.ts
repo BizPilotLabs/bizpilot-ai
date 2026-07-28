@@ -1,4 +1,4 @@
-import type { Attachment } from "@prisma/client";
+import type { Attachment, AttachmentStatus } from "@prisma/client";
 import type { AuthenticatedRequest } from "../auth/auth.types.js";
 
 export interface AttachmentResponse {
@@ -11,6 +11,10 @@ export interface AttachmentResponse {
   mimeType: string;
   fileSize: number;
   storagePath: string;
+  provider: string;
+  status: AttachmentStatus;
+  uploadExpiresAt: Date | null;
+  finalizedAt: Date | null;
   createdAt: Date;
 }
 
@@ -30,12 +34,22 @@ export interface AttachmentListResult {
   };
 }
 
-export interface AttachmentCreateInput {
+export interface AttachmentUploadIntentInput {
   originalName: string;
-  storedName: string;
   mimeType: string;
   fileSize: number;
-  storagePath: string;
+}
+
+export interface AttachmentUploadAuthorization {
+  attachment: AttachmentResponse;
+  uploadUrl: string;
+  headers: Record<string, string>;
+  expiresAt: Date;
+}
+
+export interface AttachmentDownloadAuthorization {
+  downloadUrl: string;
+  expiresAt: Date;
 }
 
 export interface RequestMetadata {

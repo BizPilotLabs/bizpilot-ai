@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { CalendarClock, Pencil, Trash2, UserRound } from "lucide-react";
+import { CalendarClock, Paperclip, Pencil, Trash2, UserRound } from "lucide-react";
 import { type KeyboardEvent, type MouseEvent, type ReactElement } from "react";
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { useToast } from "@/hooks";
@@ -18,6 +18,7 @@ export interface TaskCardProps {
   users: UserProfile[];
   onDeleteTask: (task: Task) => void;
   onEditTask: (task: Task) => void;
+  onViewAttachments: (task: Task) => void;
 }
 
 const priorityVariantMap: Record<TaskPriority, "neutral" | "primary" | "secondary" | "success" | "warning" | "danger"> = {
@@ -61,7 +62,7 @@ const handleKeyboardActivation = (event: KeyboardEvent<HTMLElement>): void => {
   }
 };
 
-export function TaskCard({ hasUsersError = false, isLoadingUsers = false, task, users, onDeleteTask, onEditTask }: TaskCardProps): ReactElement {
+export function TaskCard({ hasUsersError = false, isLoadingUsers = false, task, users, onDeleteTask, onEditTask, onViewAttachments }: TaskCardProps): ReactElement {
   const updateAssignee = useUpdateTaskAssignee();
   const updateStatus = useUpdateTaskStatus();
   const { addToast } = useToast();
@@ -75,6 +76,11 @@ export function TaskCard({ hasUsersError = false, isLoadingUsers = false, task, 
   const handleDelete = (event: MouseEvent<HTMLButtonElement>): void => {
     event.stopPropagation();
     onDeleteTask(task);
+  };
+
+  const handleAttachments = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.stopPropagation();
+    onViewAttachments(task);
   };
 
   const handleStatusChange = (status: TaskStatus): void => {
@@ -142,6 +148,9 @@ export function TaskCard({ hasUsersError = false, isLoadingUsers = false, task, 
             <div className="flex items-start justify-between gap-4">
               <CardTitle className="line-clamp-2 text-lg leading-snug">{task.title}</CardTitle>
               <div className="flex shrink-0 items-center gap-1 opacity-80 transition-opacity group-hover:opacity-100">
+                <Button aria-label={`View attachments for ${task.title}`} size="icon" type="button" variant="ghost" onClick={handleAttachments}>
+                  <Paperclip aria-hidden="true" className="h-4 w-4" />
+                </Button>
                 <Button aria-label={`Edit ${task.title}`} size="icon" type="button" variant="ghost" onClick={handleEdit}>
                   <Pencil aria-hidden="true" className="h-4 w-4" />
                 </Button>
@@ -191,3 +200,4 @@ export function TaskCard({ hasUsersError = false, isLoadingUsers = false, task, 
     </motion.article>
   );
 }
+

@@ -1,6 +1,6 @@
 import type { Response } from "express";
 
-import { attachmentIdParamsSchema, createAttachmentSchema, listAttachmentsQuerySchema, taskAttachmentParamsSchema } from "./attachment.schema.js";
+import { attachmentIdParamsSchema, initializeAttachmentUploadSchema, listAttachmentsQuerySchema, taskAttachmentParamsSchema } from "./attachment.schema.js";
 import { attachmentService } from "./attachment.service.js";
 import type { AttachmentRequest, RequestMetadata } from "./attachment.types.js";
 
@@ -11,7 +11,7 @@ interface SuccessResponse<T> {
 
 const toMetadata = (request: AttachmentRequest): RequestMetadata => ({
   ipAddress: request.ip,
-  userAgent: request.get("user-agent"),
+  userAgent: request.get("user-agent")
 });
 
 const sendSuccess = <T>(response: Response, statusCode: number, data: T): void => {
@@ -27,17 +27,27 @@ export class AttachmentController {
     sendSuccess(response, 200, result);
   }
 
-  public async createAttachment(request: AttachmentRequest, response: Response): Promise<void> {
+  public async initializeUpload(request: AttachmentRequest, response: Response): Promise<void> {
     const params = taskAttachmentParamsSchema.parse(request.params);
-    const input = createAttachmentSchema.parse(request.body);
-    const attachment = await attachmentService.createAttachment({
+    const input = initializeAttachmentUploadSchema.parse(request.body);
+    const upload = await attachmentService.initializeUpload({
       organizationId: request.auth.organizationId,
       actorUserId: request.auth.userId,
       taskId: params.taskId,
-      data: input,
-      metadata: toMetadata(request),
+      data: input
     });
-    sendSuccess(response, 201, { attachment });
+    sendSuccess(response, 201, { upload });
+  }
+
+  public async finalizeUpload(request: AttachmentRequest, response: Response): Promise<void> {
+    const params = attachmentIdParamsSchema.parse(request.params);
+    const attachment = await attachmentService.finalizeUpload({
+      organizationId: request.auth.organizationId,
+      actorUserId: request.auth.userId,
+      attachmentId: params.id,
+      metadata: toMetadata(request)
+    });
+    sendSuccess(response, 200, { attachment });
   }
 
   public async getAttachment(request: AttachmentRequest, response: Response): Promise<void> {
@@ -46,13 +56,19 @@ export class AttachmentController {
     sendSuccess(response, 200, { attachment });
   }
 
+  public async authorizeDownload(request: AttachmentRequest, response: Response): Promise<void> {
+    const params = attachmentIdParamsSchema.parse(request.params);
+    const download = await attachmentService.authorizeDownload({ organizationId: request.auth.organizationId, attachmentId: params.id });
+    sendSuccess(response, 200, download);
+  }
+
   public async deleteAttachment(request: AttachmentRequest, response: Response): Promise<void> {
     const params = attachmentIdParamsSchema.parse(request.params);
     await attachmentService.deleteAttachment({
       organizationId: request.auth.organizationId,
       actorUserId: request.auth.userId,
       attachmentId: params.id,
-      metadata: toMetadata(request),
+      metadata: toMetadata(request)
     });
     sendSuccess(response, 200, { deleted: true });
   }

@@ -82,7 +82,7 @@ const schemas = {
   Team: entity({ id: uuid, organizationId: uuid, name: { type: "string" }, description: nullableString, color: nullableString, leadId: { type: ["string", "null"], format: "uuid" }, archived: { type: "boolean" }, createdAt: dateTime, updatedAt: dateTime }),
   TeamMember: entity({ id: uuid, teamId: uuid, userId: uuid, user: { $ref: "#/components/schemas/User" }, createdAt: dateTime, updatedAt: dateTime }),
   Comment: entity({ id: uuid, taskId: uuid, organizationId: uuid, authorId: uuid, content: { type: "string", maxLength: 5000 }, edited: { type: "boolean" }, createdAt: dateTime, updatedAt: dateTime }),
-  Attachment: entity({ id: uuid, organizationId: uuid, taskId: uuid, uploadedBy: uuid, originalName: { type: "string" }, storedName: { type: "string" }, mimeType: { type: "string" }, fileSize: { type: "integer", maximum: 26214400 }, storagePath: { type: "string" }, createdAt: dateTime }),
+  Attachment: entity({ id: uuid, organizationId: uuid, taskId: uuid, uploadedBy: uuid, originalName: { type: "string" }, storedName: { type: "string" }, mimeType: { type: "string" }, fileSize: { type: "integer", maximum: 26214400 }, storagePath: { type: "string" }, provider: { type: "string" }, status: { type: "string", enum: ["PENDING", "READY"] }, uploadExpiresAt: { type: ["string", "null"], format: "date-time" }, finalizedAt: { type: ["string", "null"], format: "date-time" }, createdAt: dateTime }),
   Activity: entity({ id: uuid, organizationId: { type: ["string", "null"], format: "uuid" }, userId: { type: ["string", "null"], format: "uuid" }, action: { type: "string" }, type: { type: "string" }, resource: { type: "string" }, ipAddress: nullableString, userAgent: nullableString, metadata: { type: ["object", "array", "string", "number", "boolean", "null"], description: "Sanitized audit metadata. Sensitive keys are excluded from API responses." }, actor: { type: ["object", "null"] }, createdAt: dateTime, updatedAt: dateTime }),
   AuthPrincipal: entity({ user: { $ref: "#/components/schemas/User" }, organization: { $ref: "#/components/schemas/Organization" }, roles: { type: "array", items: { $ref: "#/components/schemas/Role" } }, permissions: { type: "array", items: { $ref: "#/components/schemas/Permission" } } }),
   AuthResult: entity({ user: { $ref: "#/components/schemas/User" }, organization: { $ref: "#/components/schemas/Organization" }, roles: { type: "array", items: { $ref: "#/components/schemas/Role" } }, permissions: { type: "array", items: { $ref: "#/components/schemas/Permission" } }, accessToken: { type: "string" } }),
@@ -103,7 +103,7 @@ const schemas = {
   TeamRequest: entity({ name: { type: "string" }, description: nullableString, color: nullableString, leadId: { type: ["string", "null"], format: "uuid" }, archived: { type: "boolean" } }),
   TeamMemberRequest: entity({ userId: uuid }),
   CommentRequest: entity({ content: { type: "string", minLength: 1, maxLength: 5000 } }),
-  AttachmentRequest: entity({ originalName: { type: "string" }, storedName: { type: "string" }, mimeType: { type: "string" }, fileSize: { type: "integer", maximum: 26214400 }, storagePath: { type: "string" } }),
+  AttachmentUploadRequest: entity({ originalName: { type: "string" }, mimeType: { type: "string" }, fileSize: { type: "integer", maximum: 26214400 } }),
 };
 
 const openApiDefinition = {
@@ -150,7 +150,9 @@ const openApiDefinition = {
     "/teams/{id}/members/{userId}": { delete: securedDelete("Teams", "Remove team member", [id("id"), id("userId")]) },
     "/tasks/{taskId}/comments": { get: securedGet("Comments", "List task comments", list("comments", "#/components/schemas/Comment"), [id("taskId"), ...pageParams]), post: securedPost("Comments", "Create task comment", "#/components/schemas/CommentRequest", wrapped("comment", "#/components/schemas/Comment"), [id("taskId")]) },
     "/comments/{id}": { patch: securedPatch("Comments", "Update comment", "#/components/schemas/CommentRequest", wrapped("comment", "#/components/schemas/Comment"), [id("id")]), delete: securedDelete("Comments", "Delete comment", [id("id")]) },
-    "/tasks/{taskId}/attachments": { get: securedGet("Attachments", "List task attachments", list("attachments", "#/components/schemas/Attachment"), [id("taskId"), ...pageParams]), post: securedPost("Attachments", "Upload attachment metadata", "#/components/schemas/AttachmentRequest", wrapped("attachment", "#/components/schemas/Attachment"), [id("taskId")]) },
+    "/tasks/{taskId}/attachments": { get: securedGet("Attachments", "List task attachments", list("attachments", "#/components/schemas/Attachment"), [id("taskId"), ...pageParams]), post: securedPost("Attachments", "Initialize attachment upload", "#/components/schemas/AttachmentUploadRequest", ok(entity({ upload: entity({ attachment: { $ref: "#/components/schemas/Attachment" }, uploadUrl: { type: "string", format: "uri" }, headers: { type: "object", additionalProperties: { type: "string" } }, expiresAt: dateTime }) })), [id("taskId")]) },
+    "/attachments/{id}/complete": { post: { tags: ["Attachments"], summary: "Finalize attachment upload", security, parameters: [id("id")], responses: { 200: wrapped("attachment", "#/components/schemas/Attachment"), ...errors } } },
+    "/attachments/{id}/download": { get: securedGet("Attachments", "Authorize attachment download", ok(entity({ downloadUrl: { type: "string", format: "uri" }, expiresAt: dateTime })), [id("id")]) },
     "/attachments/{id}": { get: securedGet("Attachments", "Get attachment metadata", wrapped("attachment", "#/components/schemas/Attachment"), [id("id")]), delete: securedDelete("Attachments", "Delete attachment", [id("id")]) },
     "/activities": { get: securedGet("Activities", "List activity feed", list("activities", "#/components/schemas/Activity"), [...pageParams, { name: "search", in: "query", schema: { type: "string" } }, { name: "action", in: "query", schema: { type: "string" } }, { name: "resource", in: "query", schema: { type: "string" } }, { name: "userId", in: "query", schema: uuid }, { name: "startDate", in: "query", schema: dateTime }, { name: "endDate", in: "query", schema: dateTime }]) },
     "/activities/{id}": { get: securedGet("Activities", "Get activity", wrapped("activity", "#/components/schemas/Activity"), [id("id")]) },
@@ -167,6 +169,7 @@ export const openApiSpec = swaggerJSDoc(swaggerOptions) as Schema;
 export const setupSwaggerDocs = (app: Express): void => {
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiSpec, { explorer: true, customSiteTitle: "BizPilot AI API Docs" }));
 };
+
 
 
 
