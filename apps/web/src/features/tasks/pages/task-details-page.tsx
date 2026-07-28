@@ -3,6 +3,7 @@ import { useState, type ReactElement } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Skeleton } from "@/components/ui";
 import { TaskAttachmentsDialog } from "@/features/attachments";
+import { TaskCommentsSection } from "@/features/comments";
 import { getTaskErrorMessage, useTask } from "../hooks";
 import { EditTaskDialog, TasksErrorState } from "../components";
 import type { TaskPriority, TaskStatus } from "../types";
@@ -68,10 +69,7 @@ export function TaskDetailsPage(): ReactElement {
         </Card>
       </section>
 
-      <Card>
-        <CardHeader><CardTitle>Comments</CardTitle></CardHeader>
-        <CardContent><p className="text-sm text-muted-foreground">Comment APIs exist on the backend, but the frontend comments workflow has not been implemented yet.</p></CardContent>
-      </Card>
+      <TaskCommentsSection commentCount={task.commentCount} taskId={task.id} />
 
       <EditTaskDialog open={editOpen} task={task} onOpenChange={setEditOpen} />
       <TaskAttachmentsDialog open={attachmentsOpen} taskId={task.id} taskTitle={task.title} onOpenChange={setAttachmentsOpen} />

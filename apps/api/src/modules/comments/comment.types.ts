@@ -1,11 +1,36 @@
-import type { Comment, Role, User } from "@prisma/client";
+import { Prisma, type Role } from "@prisma/client";
 import type { AuthenticatedRequest } from "../auth/auth.types.js";
+
+const _commentWithAuthor = Prisma.validator<Prisma.CommentDefaultArgs>()({
+  include: {
+    author: {
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        avatar: true,
+        deletedAt: true,
+      },
+    },
+  },
+});
+
+export interface CommentAuthorSummary {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  avatar: string | null;
+  isDeleted: boolean;
+}
 
 export interface CommentResponse {
   id: string;
   taskId: string;
   organizationId: string;
   authorId: string;
+  author: CommentAuthorSummary;
   content: string;
   edited: boolean;
   createdAt: Date;
@@ -48,6 +73,5 @@ export interface RequesterRecord {
   }[];
 }
 
-export type CommentRecord = Comment;
-export type CommentAuthorRecord = Pick<User, "id" | "organizationId" | "deletedAt">;
+export type CommentRecord = Prisma.CommentGetPayload<typeof _commentWithAuthor>;
 export type CommentRequest = AuthenticatedRequest;
