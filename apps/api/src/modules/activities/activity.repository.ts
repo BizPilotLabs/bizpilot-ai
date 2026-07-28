@@ -52,7 +52,7 @@ export class ActivityRepository {
       prisma.auditLog.findMany({
         where,
         include: { user: { select: activityUserSelect } },
-        orderBy: { createdAt: input.query.sort },
+        orderBy: [{ createdAt: input.query.sort }, { id: input.query.sort }],
         skip: (input.query.page - 1) * input.query.limit,
         take: input.query.limit,
       }),

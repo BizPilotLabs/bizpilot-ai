@@ -27,7 +27,7 @@ export const appNavigation: NavigationItem[] = [
   { label: "Users", href: "/app/users", icon: Users },
   { label: "Roles", href: "/app/roles", icon: ShieldCheck, permission: "roles.read" },
   { label: "Organizations", href: "/app/organizations", icon: Building2 },
-  { label: "Activity", href: "/app/activity", icon: Activity },
+  { label: "Activity", href: "/app/activity", icon: Activity, permission: "activities.read" },
   { label: "Settings", href: "/app/settings", icon: Settings }
 ];
 
@@ -49,3 +49,4 @@ export const findNavigationItem = (pathname: string, items: NavigationItem[] = a
 
   return visit(items);
 };
+

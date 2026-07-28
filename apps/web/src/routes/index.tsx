@@ -2,6 +2,7 @@ import { Navigate, createBrowserRouter } from "react-router-dom";
 import { AppShell } from "@/app/app-shell";
 import { AppLayout } from "@/components/layout";
 import { LoginPage, RegisterOrganizationPage, ForgotPasswordPage, ResetPasswordPage } from "@/features/auth";
+import { ActivityPage } from "@/features/activity";
 import { DashboardPage } from "@/features/dashboard";
 import { OrganizationPage } from "@/features/organizations";
 import { ProjectsPage } from "@/features/projects";
@@ -50,7 +51,7 @@ export const appRouter = createBrowserRouter([
                   { path: "users", element: <UsersPage /> },
                   { path: "roles", element: <RolesPage /> },
                   { path: "organizations", element: <OrganizationPage /> },
-                  { path: "activity", element: <AppPlaceholderRoute title="Activity" /> },
+                  { path: "activity", element: <ActivityPage /> },
                   { path: "settings", element: <AppPlaceholderRoute title="Settings" /> }
                 ]
               }
@@ -64,6 +65,7 @@ export const appRouter = createBrowserRouter([
 ]);
 
 export { routePaths } from "./route-paths";
+
 
 
 

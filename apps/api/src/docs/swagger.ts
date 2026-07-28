@@ -83,7 +83,7 @@ const schemas = {
   TeamMember: entity({ id: uuid, teamId: uuid, userId: uuid, user: { $ref: "#/components/schemas/User" }, createdAt: dateTime, updatedAt: dateTime }),
   Comment: entity({ id: uuid, taskId: uuid, organizationId: uuid, authorId: uuid, content: { type: "string", maxLength: 5000 }, edited: { type: "boolean" }, createdAt: dateTime, updatedAt: dateTime }),
   Attachment: entity({ id: uuid, organizationId: uuid, taskId: uuid, uploadedBy: uuid, originalName: { type: "string" }, storedName: { type: "string" }, mimeType: { type: "string" }, fileSize: { type: "integer", maximum: 26214400 }, storagePath: { type: "string" }, createdAt: dateTime }),
-  Activity: entity({ id: uuid, organizationId: { type: ["string", "null"], format: "uuid" }, userId: { type: ["string", "null"], format: "uuid" }, action: { type: "string" }, type: { type: "string" }, resource: { type: "string" }, ipAddress: nullableString, userAgent: nullableString, metadata: { type: ["object", "array", "string", "number", "boolean", "null"] }, actor: { type: ["object", "null"] }, createdAt: dateTime, updatedAt: dateTime }),
+  Activity: entity({ id: uuid, organizationId: { type: ["string", "null"], format: "uuid" }, userId: { type: ["string", "null"], format: "uuid" }, action: { type: "string" }, type: { type: "string" }, resource: { type: "string" }, ipAddress: nullableString, userAgent: nullableString, metadata: { type: ["object", "array", "string", "number", "boolean", "null"], description: "Sanitized audit metadata. Sensitive keys are excluded from API responses." }, actor: { type: ["object", "null"] }, createdAt: dateTime, updatedAt: dateTime }),
   AuthPrincipal: entity({ user: { $ref: "#/components/schemas/User" }, organization: { $ref: "#/components/schemas/Organization" }, roles: { type: "array", items: { $ref: "#/components/schemas/Role" } }, permissions: { type: "array", items: { $ref: "#/components/schemas/Permission" } } }),
   AuthResult: entity({ user: { $ref: "#/components/schemas/User" }, organization: { $ref: "#/components/schemas/Organization" }, roles: { type: "array", items: { $ref: "#/components/schemas/Role" } }, permissions: { type: "array", items: { $ref: "#/components/schemas/Permission" } }, accessToken: { type: "string" } }),
   RegisterRequest: entity({ organizationName: { type: "string" }, organizationSlug: { type: "string" }, firstName: { type: "string" }, lastName: { type: "string" }, email: { type: "string", format: "email" }, password: { type: "string", format: "password", minLength: 12 }, timezone: { type: "string" }, country: { type: "string" }, currency: { type: "string" } }),
@@ -167,5 +167,6 @@ export const openApiSpec = swaggerJSDoc(swaggerOptions) as Schema;
 export const setupSwaggerDocs = (app: Express): void => {
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiSpec, { explorer: true, customSiteTitle: "BizPilot AI API Docs" }));
 };
+
 
 

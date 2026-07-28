@@ -1,11 +1,21 @@
+import type { Prisma } from "@prisma/client";
+
 import { AppError } from "../../core/errors/index.js";
 import { activityRepository } from "./activity.repository.js";
 import type { ActivityListQuery, ActivityListResult, ActivityRecord, ActivityResponse } from "./activity.types.js";
 
 const activityTypeByAction: Readonly<Record<string, string>> = {
   "auth.register": "User Created",
+  "auth.login": "User Signed In",
+  "auth.logout": "User Signed Out",
+  "auth.refresh": "Session Refreshed",
+  "auth.refresh_token_reuse_detected": "Refresh Token Reuse Detected",
+  "user.create": "User Created",
   "user.update": "User Updated",
   "user.delete": "User Deleted",
+  "user.roles.update": "User Roles Updated",
+  "organization.update": "Organization Updated",
+  "organization.settings.update": "Organization Settings Updated",
   "project.create": "Project Created",
   "project.update": "Project Updated",
   "project.delete": "Project Deleted",
@@ -16,7 +26,10 @@ const activityTypeByAction: Readonly<Record<string, string>> = {
   "task.assignee.change": "Task Assignee Changed",
   "team.create": "Team Created",
   "team.update": "Team Updated",
+  "team.lead.change": "Team Lead Changed",
   "team.delete": "Team Deleted",
+  "team.member.add": "Team Member Added",
+  "team.member.remove": "Team Member Removed",
   "comment.create": "Comment Created",
   "comment.update": "Comment Updated",
   "comment.delete": "Comment Deleted",
@@ -25,6 +38,35 @@ const activityTypeByAction: Readonly<Record<string, string>> = {
   "role.create": "Role Created",
   "role.update": "Role Updated",
   "role.delete": "Role Deleted",
+  "role.permissions.update": "Role Permissions Updated"
+};
+
+const sensitiveMetadataKeyPattern = /password|passwordHash|token|secret|cookie|authorization|refresh|access|credential|session|mfa|stack|privateKey/iu;
+
+const isJsonObject = (value: Prisma.JsonValue): value is Prisma.JsonObject => {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+};
+
+const sanitizeMetadata = (value: Prisma.JsonValue | null): Prisma.JsonValue | null => {
+  if (value === null) return null;
+
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeMetadata(item));
+  }
+
+  if (isJsonObject(value)) {
+    const sanitized: Prisma.JsonObject = {};
+
+    for (const [key, childValue] of Object.entries(value)) {
+      if (!sensitiveMetadataKeyPattern.test(key) && childValue !== undefined) {
+        sanitized[key] = sanitizeMetadata(childValue) as Prisma.JsonValue;
+      }
+    }
+
+    return sanitized;
+  }
+
+  return value;
 };
 
 const toTitleCase = (value: string): string => {
@@ -45,7 +87,7 @@ const toActivityResponse = (activity: ActivityRecord): ActivityResponse => ({
   resource: activity.resource,
   ipAddress: activity.ipAddress,
   userAgent: activity.userAgent,
-  metadata: activity.metadata,
+  metadata: sanitizeMetadata(activity.metadata),
   createdAt: activity.createdAt,
   updatedAt: activity.updatedAt,
   actor:
@@ -56,8 +98,8 @@ const toActivityResponse = (activity: ActivityRecord): ActivityResponse => ({
           email: activity.user.email,
           firstName: activity.user.firstName,
           lastName: activity.user.lastName,
-          avatar: activity.user.avatar,
-        },
+          avatar: activity.user.avatar
+        }
 });
 
 export class ActivityService {
@@ -75,8 +117,8 @@ export class ActivityService {
         page: input.query.page,
         limit: input.query.limit,
         total: result.total,
-        totalPages,
-      },
+        totalPages
+      }
     };
   }
 
@@ -92,3 +134,4 @@ export class ActivityService {
 }
 
 export const activityService = new ActivityService();
+
