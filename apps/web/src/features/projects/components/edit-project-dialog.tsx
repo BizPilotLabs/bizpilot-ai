@@ -17,7 +17,9 @@ export interface EditProjectDialogProps {
 const editProjectFormSchema = createProjectSchema.pick({
   name: true,
   description: true,
-  status: true
+  status: true,
+  startDate: true,
+  endDate: true
 });
 
 type EditProjectFormValues = z.infer<typeof editProjectFormSchema>;
@@ -30,10 +32,20 @@ const statusOptions = [
   { label: "Cancelled", value: "CANCELLED" }
 ];
 
+const toDateValue = (value: unknown): Date | undefined => {
+  if (typeof value !== "string" || value.length === 0) {
+    return undefined;
+  }
+
+  return new Date(`${value}T00:00:00.000Z`);
+};
+
 const toFormValues = (project: Project | null): EditProjectFormValues => ({
   name: project?.name ?? "",
   description: project?.description ?? "",
-  status: project?.status ?? "PLANNED"
+  status: project?.status ?? "PLANNED",
+  startDate: project?.startDate === null || project?.startDate === undefined ? undefined : project.startDate.slice(0, 10),
+  endDate: project?.endDate === null || project?.endDate === undefined ? undefined : project.endDate.slice(0, 10)
 });
 
 const toUpdateProjectInput = (values: EditProjectFormValues): UpdateProjectInput => {
@@ -47,6 +59,14 @@ const toUpdateProjectInput = (values: EditProjectFormValues): UpdateProjectInput
 
   if (values.status !== undefined) {
     input.status = values.status;
+  }
+
+  if (values.startDate !== undefined) {
+    input.startDate = values.startDate;
+  }
+
+  if (values.endDate !== undefined) {
+    input.endDate = values.endDate;
   }
 
   return input;
@@ -133,6 +153,10 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
           options={statusOptions}
           {...form.register("status")}
         />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Input error={form.formState.errors.startDate?.message} label="Start Date" type="date" {...form.register("startDate", { setValueAs: toDateValue })} />
+          <Input error={form.formState.errors.endDate?.message} label="End Date" type="date" {...form.register("endDate", { setValueAs: toDateValue })} />
+        </div>
       </form>
     </Modal>
   );

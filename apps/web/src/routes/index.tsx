@@ -5,9 +5,9 @@ import { LoginPage, RegisterOrganizationPage, ForgotPasswordPage, ResetPasswordP
 import { ActivityPage } from "@/features/activity";
 import { DashboardPage } from "@/features/dashboard";
 import { OrganizationPage } from "@/features/organizations";
-import { ProjectsPage } from "@/features/projects";
+import { ProjectDetailsPage, ProjectsPage } from "@/features/projects";
 import { RolesPage } from "@/features/rbac";
-import { TasksPage } from "@/features/tasks";
+import { TaskDetailsPage, TasksPage } from "@/features/tasks";
 import { TeamsPage } from "@/features/teams";
 import { UsersPage } from "@/features/users";
 import { GlobalLayout } from "@/layouts";
@@ -46,7 +46,9 @@ export const appRouter = createBrowserRouter([
                   { index: true, element: <Navigate replace to={routePaths.dashboard} /> },
                   { path: "dashboard", element: <DashboardPage /> },
                   { path: "projects", element: <ProjectsPage /> },
+                  { path: "projects/:projectId", element: <ProjectDetailsPage /> },
                   { path: "tasks", element: <TasksPage /> },
+                  { path: "tasks/:taskId", element: <TaskDetailsPage /> },
                   { path: "teams", element: <TeamsPage /> },
                   { path: "users", element: <UsersPage /> },
                   { path: "roles", element: <RolesPage /> },

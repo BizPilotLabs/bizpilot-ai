@@ -2,7 +2,12 @@ import { FolderKanban } from "lucide-react";
 import { type ReactElement } from "react";
 import { Card } from "@/components/ui";
 
-export function ProjectsEmptyState(): ReactElement {
+export interface ProjectsEmptyStateProps {
+  title?: string | undefined;
+  subtitle?: string | undefined;
+}
+
+export function ProjectsEmptyState({ title = "No projects yet", subtitle = "Create your first project to start managing work." }: ProjectsEmptyStateProps): ReactElement {
   return (
     <Card className="flex min-h-96 items-center justify-center overflow-hidden border-dashed bg-gradient-to-br from-muted/40 via-card to-primary/5">
       <div className="mx-auto grid max-w-sm justify-items-center gap-4 px-6 text-center">
@@ -10,8 +15,8 @@ export function ProjectsEmptyState(): ReactElement {
           <FolderKanban aria-hidden="true" className="h-7 w-7" />
         </div>
         <div className="grid gap-2">
-          <h2 className="text-h4">No projects yet</h2>
-          <p className="text-sm text-muted-foreground">Create your first project to start managing work.</p>
+          <h2 className="text-h4">{title}</h2>
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
         </div>
       </div>
     </Card>

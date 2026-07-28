@@ -18,3 +18,4 @@ export type { TasksListProps } from "./tasks-list";
 export { TasksLoadingState } from "./tasks-loading-state";
 export { TasksPageHeader } from "./tasks-page-header";
 export type { TasksPageHeaderProps } from "./tasks-page-header";
+export { TaskListControls } from "./task-list-controls";

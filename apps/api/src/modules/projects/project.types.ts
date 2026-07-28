@@ -1,5 +1,27 @@
-import type { Project, ProjectStatus } from "@prisma/client";
+import { Prisma, type ProjectStatus } from "@prisma/client";
 import type { AuthenticatedRequest } from "../auth/auth.types.js";
+
+const _projectWithOwner = Prisma.validator<Prisma.ProjectDefaultArgs>()({
+  include: {
+    createdBy: {
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        avatar: true,
+      },
+    },
+  },
+});
+
+export interface ProjectUserSummary {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  avatar: string | null;
+}
 
 export interface ProjectResponse {
   id: string;
@@ -12,6 +34,10 @@ export interface ProjectResponse {
   color: string | null;
   archived: boolean;
   createdById: string;
+  createdBy: ProjectUserSummary;
+  taskCount: number;
+  completedTaskCount: number;
+  progressPercentage: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -60,5 +86,9 @@ export interface RequestMetadata {
   userAgent: string | undefined;
 }
 
-export type ProjectRecord = Project;
+export type ProjectModelRecord = Prisma.ProjectGetPayload<typeof _projectWithOwner>;
+export type ProjectRecord = ProjectModelRecord & {
+  taskCount: number;
+  completedTaskCount: number;
+};
 export type ProjectRequest = AuthenticatedRequest;

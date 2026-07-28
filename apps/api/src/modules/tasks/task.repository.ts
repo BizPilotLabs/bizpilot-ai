@@ -1,7 +1,44 @@
-import type { Prisma, Task } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 import { prisma } from "../../core/database/index.js";
-import type { RequestMetadata, TaskAssigneeInput, TaskCreateInput, TaskListQuery, TaskStatusInput, TaskUpdateInput } from "./task.types.js";
+import type { RequestMetadata, TaskAssigneeInput, TaskCreateInput, TaskListQuery, TaskRecord, TaskStatusInput, TaskUpdateInput } from "./task.types.js";
+
+const taskInclude = {
+  project: {
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      archived: true,
+    },
+  },
+  assignee: {
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      avatar: true,
+      status: true,
+    },
+  },
+  createdBy: {
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      avatar: true,
+      status: true,
+    },
+  },
+  _count: {
+    select: {
+      comments: { where: { deletedAt: null } },
+      attachments: { where: { deletedAt: null, status: "READY" } },
+    },
+  },
+} satisfies Prisma.TaskInclude;
 
 const createSearchWhere = (query: TaskListQuery): Prisma.TaskWhereInput => {
   if (query.search === undefined) return {};
@@ -45,7 +82,7 @@ export class TaskRepository {
     return prisma.user.findFirst({ where: { id: input.userId, organizationId: input.organizationId, deletedAt: null }, select: { id: true } });
   }
 
-  public async findTasks(input: { organizationId: string; query: TaskListQuery }): Promise<{ tasks: Task[]; total: number }> {
+  public async findTasks(input: { organizationId: string; query: TaskListQuery }): Promise<{ tasks: TaskRecord[]; total: number }> {
     const where: Prisma.TaskWhereInput = { deletedAt: null, project: { organizationId: input.organizationId, deletedAt: null }, ...createSearchWhere(input.query) };
     if (input.query.status !== undefined) where.status = input.query.status;
     if (input.query.priority !== undefined) where.priority = input.query.priority;
@@ -54,37 +91,37 @@ export class TaskRepository {
     if (input.query.overdue === true) where.dueDate = { lt: new Date() };
 
     const [tasks, total] = await Promise.all([
-      prisma.task.findMany({ where, orderBy: { createdAt: input.query.sort }, skip: (input.query.page - 1) * input.query.limit, take: input.query.limit }),
+      prisma.task.findMany({ where, include: taskInclude, orderBy: [{ createdAt: input.query.sort }, { id: input.query.sort }], skip: (input.query.page - 1) * input.query.limit, take: input.query.limit }),
       prisma.task.count({ where }),
     ]);
     return { tasks, total };
   }
 
-  public async findTaskByIdInOrganization(input: { taskId: string; organizationId: string }): Promise<Task | null> {
-    return prisma.task.findFirst({ where: { id: input.taskId, deletedAt: null, project: { organizationId: input.organizationId, deletedAt: null } } });
+  public async findTaskByIdInOrganization(input: { taskId: string; organizationId: string }): Promise<TaskRecord | null> {
+    return prisma.task.findFirst({ where: { id: input.taskId, deletedAt: null, project: { organizationId: input.organizationId, deletedAt: null } }, include: taskInclude });
   }
 
-  public async createTask(input: { actorUserId: string; organizationId: string; data: TaskCreateInput; metadata: RequestMetadata }): Promise<Task> {
+  public async createTask(input: { actorUserId: string; organizationId: string; data: TaskCreateInput; metadata: RequestMetadata }): Promise<TaskRecord> {
     return prisma.$transaction(async (transaction) => {
-      const task = await transaction.task.create({ data: toCreateData({ createdById: input.actorUserId, data: input.data }) });
+      const task = await transaction.task.create({ data: toCreateData({ createdById: input.actorUserId, data: input.data }), include: taskInclude });
       await transaction.auditLog.create({ data: { userId: input.actorUserId, organizationId: input.organizationId, action: "task.create", resource: "task", ipAddress: input.metadata.ipAddress ?? null, userAgent: input.metadata.userAgent ?? null, metadata: { taskId: task.id, projectId: task.projectId } } });
       return task;
     });
   }
 
-  public async updateTask(input: { taskId: string; actorUserId: string; organizationId: string; data: TaskUpdateInput; metadata: RequestMetadata; action?: string }): Promise<Task> {
+  public async updateTask(input: { taskId: string; actorUserId: string; organizationId: string; data: TaskUpdateInput; metadata: RequestMetadata; action?: string }): Promise<TaskRecord> {
     return prisma.$transaction(async (transaction) => {
-      const task = await transaction.task.update({ where: { id: input.taskId }, data: toUpdateData(input.data) });
+      const task = await transaction.task.update({ where: { id: input.taskId }, data: toUpdateData(input.data), include: taskInclude });
       await transaction.auditLog.create({ data: { userId: input.actorUserId, organizationId: input.organizationId, action: input.action ?? "task.update", resource: "task", ipAddress: input.metadata.ipAddress ?? null, userAgent: input.metadata.userAgent ?? null, metadata: { taskId: task.id, fields: Object.keys(input.data).filter((key) => input.data[key as keyof TaskUpdateInput] !== undefined) } } });
       return task;
     });
   }
 
-  public async updateTaskStatus(input: { taskId: string; actorUserId: string; organizationId: string; data: TaskStatusInput; metadata: RequestMetadata }): Promise<Task> {
+  public async updateTaskStatus(input: { taskId: string; actorUserId: string; organizationId: string; data: TaskStatusInput; metadata: RequestMetadata }): Promise<TaskRecord> {
     return this.updateTask({ ...input, data: { status: input.data.status }, action: "task.status.change" });
   }
 
-  public async updateTaskAssignee(input: { taskId: string; actorUserId: string; organizationId: string; data: TaskAssigneeInput; metadata: RequestMetadata }): Promise<Task> {
+  public async updateTaskAssignee(input: { taskId: string; actorUserId: string; organizationId: string; data: TaskAssigneeInput; metadata: RequestMetadata }): Promise<TaskRecord> {
     return this.updateTask({ ...input, data: { assigneeId: input.data.assigneeId }, action: "task.assignee.change" });
   }
 

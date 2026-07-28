@@ -13,3 +13,5 @@ export { ProjectsLoadingState } from "./projects-loading-state";
 export { ProjectsPageHeader } from "./projects-page-header";
 export type { ProjectsPageHeaderProps } from "./projects-page-header";
 
+export { ProjectListControls } from "./project-list-controls";
+export { DeleteProjectDialog } from "./delete-project-dialog";

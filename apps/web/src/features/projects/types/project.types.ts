@@ -15,6 +15,14 @@ export interface ApiErrorResponse {
 export type ProjectStatus = "PLANNED" | "ACTIVE" | "ON_HOLD" | "COMPLETED" | "CANCELLED";
 export type ProjectSortDirection = "asc" | "desc";
 
+export interface ProjectUserSummary {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  avatar: string | null;
+}
+
 export interface Project {
   id: string;
   organizationId: string;
@@ -26,6 +34,10 @@ export interface Project {
   color: string | null;
   archived: boolean;
   createdById: string;
+  createdBy: ProjectUserSummary;
+  taskCount: number;
+  completedTaskCount: number;
+  progressPercentage: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -38,12 +50,12 @@ export interface ProjectPagination {
 }
 
 export interface ProjectListQuery {
-  page?: number;
-  limit?: number;
-  search?: string;
-  sort?: ProjectSortDirection;
-  status?: ProjectStatus;
-  archived?: boolean;
+  page?: number | undefined;
+  limit?: number | undefined;
+  search?: string | undefined;
+  sort?: ProjectSortDirection | undefined;
+  status?: ProjectStatus | undefined;
+  archived?: boolean | undefined;
 }
 
 export interface ProjectListResult {
@@ -62,25 +74,24 @@ export interface ProjectDeleteResponse {
 export interface CreateProjectInput {
   name: string;
   description?: string | null;
-  status?: ProjectStatus;
+  status?: ProjectStatus | undefined;
   startDate?: string | Date | null;
   endDate?: string | Date | null;
   color?: string | null;
-  archived?: boolean;
+  archived?: boolean | undefined;
 }
 
 export interface UpdateProjectInput {
   name?: string;
   description?: string | null;
-  status?: ProjectStatus;
+  status?: ProjectStatus | undefined;
   startDate?: string | Date | null;
   endDate?: string | Date | null;
   color?: string | null;
-  archived?: boolean;
+  archived?: boolean | undefined;
 }
 
 export interface UpdateProjectVariables {
   projectId: string;
   data: UpdateProjectInput;
 }
-

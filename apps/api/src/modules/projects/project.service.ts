@@ -2,6 +2,14 @@ import { AppError } from "../../core/errors/index.js";
 import { projectRepository } from "./project.repository.js";
 import type { ProjectCreateInput, ProjectListQuery, ProjectListResult, ProjectRecord, ProjectResponse, ProjectUpdateInput, RequestMetadata } from "./project.types.js";
 
+const calculateProgressPercentage = (project: ProjectRecord): number => {
+  if (project.taskCount === 0) {
+    return 0;
+  }
+
+  return Math.round((project.completedTaskCount / project.taskCount) * 100);
+};
+
 const toProjectResponse = (project: ProjectRecord): ProjectResponse => ({
   id: project.id,
   organizationId: project.organizationId,
@@ -13,6 +21,10 @@ const toProjectResponse = (project: ProjectRecord): ProjectResponse => ({
   color: project.color,
   archived: project.archived,
   createdById: project.createdById,
+  createdBy: project.createdBy,
+  taskCount: project.taskCount,
+  completedTaskCount: project.completedTaskCount,
+  progressPercentage: calculateProgressPercentage(project),
   createdAt: project.createdAt,
   updatedAt: project.updatedAt,
 });

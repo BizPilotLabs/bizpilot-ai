@@ -6,6 +6,8 @@ import { TaskCard } from "./task-card";
 import type { Task } from "../types";
 
 export interface TasksListProps {
+  canDeleteTask?: boolean;
+  canUpdateTask?: boolean;
   hasUsersError?: boolean;
   isLoadingUsers?: boolean;
   tasks: Task[];
@@ -13,14 +15,17 @@ export interface TasksListProps {
   onDeleteTask: (task: Task) => void;
   onEditTask: (task: Task) => void;
   onViewAttachments: (task: Task) => void;
+  onViewTask: (task: Task) => void;
 }
 
-export function TasksList({ hasUsersError = false, isLoadingUsers = false, tasks, users, onDeleteTask, onEditTask, onViewAttachments }: TasksListProps): ReactElement {
+export function TasksList({ canDeleteTask = true, canUpdateTask = true, hasUsersError = false, isLoadingUsers = false, tasks, users, onDeleteTask, onEditTask, onViewAttachments, onViewTask }: TasksListProps): ReactElement {
   return (
-    <motion.section aria-label="Tasks" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" variants={staggerChildren} initial="hidden" animate="visible">
+    <motion.div animate="show" className="grid gap-5 md:grid-cols-2 xl:grid-cols-3" initial="hidden" variants={staggerChildren}>
       {tasks.map((task) => (
         <TaskCard
           key={task.id}
+          canDeleteTask={canDeleteTask}
+          canUpdateTask={canUpdateTask}
           hasUsersError={hasUsersError}
           isLoadingUsers={isLoadingUsers}
           task={task}
@@ -28,9 +33,9 @@ export function TasksList({ hasUsersError = false, isLoadingUsers = false, tasks
           onDeleteTask={onDeleteTask}
           onEditTask={onEditTask}
           onViewAttachments={onViewAttachments}
+          onViewTask={onViewTask}
         />
       ))}
-    </motion.section>
+    </motion.div>
   );
 }
-
