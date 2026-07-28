@@ -1,0 +1,14 @@
+process.env.NODE_ENV = "test";
+process.env.PORT = "4000";
+process.env.HOST = "127.0.0.1";
+process.env.DATABASE_URL = process.env.TEST_DATABASE_URL ?? "postgresql://bizpilot_test:bizpilot_test@127.0.0.1:5432/bizpilot_test";
+process.env.JWT_SECRET = "test-jwt-secret-at-least-32-characters-long";
+process.env.JWT_ISSUER = "bizpilot-ai-test";
+process.env.JWT_AUDIENCE = "bizpilot-ai-test";
+process.env.JWT_ACCESS_TOKEN_EXPIRES_IN = "15m";
+process.env.REFRESH_TOKEN_EXPIRES_IN_DAYS = "30";
+process.env.SESSION_EXPIRES_IN_DAYS = "30";
+process.env.REFRESH_TOKEN_COOKIE_NAME = "bizpilot_refresh_token_test";
+process.env.CORS_ORIGIN = "http://localhost:3000";
+process.env.LOG_LEVEL = "silent";
+process.env.SHUTDOWN_TIMEOUT_MS = "1000";
