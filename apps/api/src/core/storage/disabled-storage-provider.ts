@@ -1,5 +1,5 @@
 import { AppError } from "../errors/index.js";
-import type { CreateDownloadUrlInput, CreateUploadUrlInput, StorageObjectMetadata, StorageProvider } from "./storage.types.js";
+import type { CreateDownloadUrlInput, CreateUploadUrlInput, GetObjectContentInput, StorageObjectContent, StorageObjectMetadata, StorageProvider } from "./storage.types.js";
 
 export class DisabledStorageProvider implements StorageProvider {
   public readonly providerName = "disabled";
@@ -14,6 +14,10 @@ export class DisabledStorageProvider implements StorageProvider {
   }
 
   public getObjectMetadata(_key: string): Promise<StorageObjectMetadata | null> {
+    throw new AppError({ statusCode: 503, message: "Attachment storage is not configured.", code: "STORAGE_NOT_CONFIGURED" });
+  }
+
+  public getObjectContent(_input: GetObjectContentInput): Promise<StorageObjectContent | null> {
     throw new AppError({ statusCode: 503, message: "Attachment storage is not configured.", code: "STORAGE_NOT_CONFIGURED" });
   }
 

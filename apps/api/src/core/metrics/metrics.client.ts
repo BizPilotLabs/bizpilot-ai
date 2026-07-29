@@ -2,7 +2,7 @@ import { collectDefaultMetrics, Counter, Gauge, Histogram, Registry } from "prom
 
 import { env } from "../../config/index.js";
 import { logger } from "../logger/index.js";
-import type { AiFailureMetricLabels, AiQueryMetricLabels, AiRateLimitMetricLabels, HttpMetricLabels, MetricsClient, MetricsDependencyName, MetricsOutcome, MetricsStatus, MetricsStoreType, MetricsTokenDirection, RedisHealthMetricLabels } from "./metrics.types.js";
+import type { AiFailureMetricLabels, AiQueryMetricLabels, AiRateLimitMetricLabels, AttachmentExtractionMetricLabels, BackgroundJobMetricLabels, BackgroundWorkerStateLabels, HttpMetricLabels, MetricsClient, MetricsDependencyName, MetricsOutcome, MetricsStatus, MetricsStoreType, MetricsTokenDirection, RedisHealthMetricLabels } from "./metrics.types.js";
 
 const forbiddenLabelPattern = /(question|answer|prompt|context|token|authorization|cookie|password|email|userId|organizationId|projectId|taskId|commentId|attachmentId|redisUrl|redisKey|stack|message)/iu;
 const safeValuePattern = /^[a-zA-Z0-9_.:/ -]{1,120}$/u;
@@ -49,6 +49,9 @@ export class NoopMetricsClient implements MetricsClient {
   public recordRedisCommandFailure(_operation: string, _failureCategory: string): void { return; }
   public observeRedisHealth(_labels: RedisHealthMetricLabels, _durationSeconds: number): void { return; }
   public setDependencyState(_dependency: MetricsDependencyName, _status: MetricsStatus, _value: number): void { return; }
+  public recordAttachmentExtraction(_labels: AttachmentExtractionMetricLabels, _durationSeconds: number): void { return; }
+  public recordBackgroundJob(_labels: BackgroundJobMetricLabels): void { return; }
+  public setBackgroundWorkerState(_labels: BackgroundWorkerStateLabels): void { return; }
   public async metrics(): Promise<string> { return ""; }
   public contentType(): string { return "text/plain; version=0.0.4; charset=utf-8"; }
   public reset(): void { return; }
@@ -71,6 +74,11 @@ export class PrometheusMetricsClient implements MetricsClient {
   private readonly redisCommandFailures: Counter;
   private readonly redisHealthDuration: Histogram;
   private readonly dependencyState: Gauge;
+  private readonly attachmentExtractionResults: Counter;
+  private readonly attachmentExtractionDuration: Histogram;
+  private readonly backgroundJobs: Counter;
+  private readonly backgroundWorkerActive: Gauge;
+  private readonly backgroundWorkerQueued: Gauge;
 
   public constructor(input?: { registry?: Registry | undefined; collectDefaultMetrics?: boolean | undefined }) {
     this.registry = input?.registry ?? new Registry();
@@ -95,6 +103,11 @@ export class PrometheusMetricsClient implements MetricsClient {
     this.redisCommandFailures = new Counter({ name: createName("redis_command_failures_total"), help: "Redis command failures by operation and safe category.", labelNames: ["operation", "failure_category"], registers: [this.registry] });
     this.redisHealthDuration = new Histogram({ name: createName("redis_health_check_duration_seconds"), help: "Redis health probe duration in seconds.", labelNames: ["status", "enabled", "required", "failure_category"], buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2], registers: [this.registry] });
     this.dependencyState = new Gauge({ name: createName("dependency_state"), help: "Dependency readiness state. A value of 1 marks the current state for the dependency.", labelNames: ["dependency", "status"], registers: [this.registry] });
+    this.attachmentExtractionResults = new Counter({ name: createName("attachment_extraction_results_total"), help: "Attachment text extraction results by safe category.", labelNames: ["mime_category", "extractor", "result", "truncated"], registers: [this.registry] });
+    this.attachmentExtractionDuration = new Histogram({ name: createName("attachment_extraction_duration_seconds"), help: "Attachment text extraction duration in seconds.", labelNames: ["mime_category", "extractor", "result", "truncated"], buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 15, 30, 60], registers: [this.registry] });
+    this.backgroundJobs = new Counter({ name: createName("background_jobs_total"), help: "Background job dispatch and execution outcomes.", labelNames: ["worker_type", "job_name", "result"], registers: [this.registry] });
+    this.backgroundWorkerActive = new Gauge({ name: createName("background_worker_active_jobs"), help: "Active in-process background jobs.", labelNames: ["worker_type"], registers: [this.registry] });
+    this.backgroundWorkerQueued = new Gauge({ name: createName("background_worker_queued_jobs"), help: "Queued in-process background jobs.", labelNames: ["worker_type"], registers: [this.registry] });
   }
 
   public recordHttpRequest(labels: HttpMetricLabels, durationSeconds: number): void {
@@ -158,6 +171,26 @@ export class PrometheusMetricsClient implements MetricsClient {
       for (const currentStatus of statusValues) {
         this.dependencyState.set(sanitizeLabels({ dependency, status: currentStatus }), currentStatus === status ? value : 0);
       }
+    });
+  }
+
+  public recordAttachmentExtraction(labels: AttachmentExtractionMetricLabels, durationSeconds: number): void {
+    safely(() => {
+      const safe = sanitizeLabels({ mime_category: labels.mimeCategory, extractor: labels.extractor, result: labels.result, truncated: labels.truncated });
+      this.attachmentExtractionResults.inc(safe);
+      this.attachmentExtractionDuration.observe(safe, durationSeconds);
+    });
+  }
+
+  public recordBackgroundJob(labels: BackgroundJobMetricLabels): void {
+    safely(() => this.backgroundJobs.inc(sanitizeLabels({ worker_type: labels.workerType, job_name: labels.jobName, result: labels.result })));
+  }
+
+  public setBackgroundWorkerState(labels: BackgroundWorkerStateLabels): void {
+    safely(() => {
+      const safe = sanitizeLabels({ worker_type: labels.workerType });
+      this.backgroundWorkerActive.set(safe, labels.activeCount);
+      this.backgroundWorkerQueued.set(safe, labels.queuedCount);
     });
   }
 

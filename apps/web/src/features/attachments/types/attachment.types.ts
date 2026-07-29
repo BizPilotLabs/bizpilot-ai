@@ -13,7 +13,26 @@ export interface ApiErrorResponse {
 }
 
 export type AttachmentStatus = "PENDING" | "READY";
+export type AttachmentExtractionStatus = "NOT_REQUESTED" | "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "UNSUPPORTED";
 export type AttachmentSortDirection = "asc" | "desc";
+
+export interface AttachmentExtractionSummary {
+  attachmentId: string;
+  status: AttachmentExtractionStatus;
+  supported: boolean;
+  extractorName: string | null;
+  extractorVersion: string | null;
+  characterCount: number | null;
+  truncated: boolean;
+  errorCode: string | null;
+  requestedAt: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+}
+
+export interface AttachmentExtractedText extends AttachmentExtractionSummary {
+  text: string | null;
+}
 
 export interface Attachment {
   id: string;
@@ -24,11 +43,19 @@ export interface Attachment {
   storedName: string;
   mimeType: string;
   fileSize: number;
-  storagePath: string;
   provider: string;
   status: AttachmentStatus;
   uploadExpiresAt: string | null;
   finalizedAt: string | null;
+  extractionStatus: AttachmentExtractionStatus;
+  extractionErrorCode: string | null;
+  extractionRequestedAt: string | null;
+  extractionStartedAt: string | null;
+  extractionCompletedAt: string | null;
+  extractorName: string | null;
+  extractorVersion: string | null;
+  extractedCharacterCount: number | null;
+  extractionTruncated: boolean;
   createdAt: string;
 }
 
@@ -69,6 +96,14 @@ export interface AttachmentUploadResponse {
 
 export interface AttachmentMutationResponse {
   attachment: Attachment;
+}
+
+export interface AttachmentExtractionResponse {
+  extraction: AttachmentExtractionSummary;
+}
+
+export interface AttachmentExtractedTextResponse {
+  extraction: AttachmentExtractedText;
 }
 
 export interface AttachmentDownloadResponse {

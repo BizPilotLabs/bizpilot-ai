@@ -13,12 +13,34 @@ const attachment = {
   storedName: "scope.pdf",
   mimeType: "application/pdf",
   fileSize: 1200,
-  storagePath: "organizations/111/tasks/cd/attachments/ab/scope.pdf",
   provider: "r2",
   status: "READY",
   uploadExpiresAt: null,
   finalizedAt: "2026-01-01T00:00:00.000Z",
+  extractionStatus: "NOT_REQUESTED",
+  extractionErrorCode: null,
+  extractionRequestedAt: null,
+  extractionStartedAt: null,
+  extractionCompletedAt: null,
+  extractorName: null,
+  extractorVersion: null,
+  extractedCharacterCount: null,
+  extractionTruncated: false,
   createdAt: "2026-01-01T00:00:00.000Z"
+};
+
+const extraction = {
+  attachmentId: attachment.id,
+  status: "COMPLETED",
+  supported: true,
+  extractorName: "pdf_parse",
+  extractorVersion: "2",
+  characterCount: 23,
+  truncated: false,
+  errorCode: null,
+  requestedAt: "2026-01-01T00:00:00.000Z",
+  startedAt: "2026-01-01T00:00:01.000Z",
+  completedAt: "2026-01-01T00:00:02.000Z"
 };
 
 describe("attachmentService", () => {
@@ -33,6 +55,11 @@ describe("attachmentService", () => {
     const result = await attachmentService.getTaskAttachments(attachment.taskId, { limit: 20 });
 
     expect(result.attachments[0]?.originalName).toBe("scope.pdf");
+    const firstAttachment = result.attachments[0];
+    expect(firstAttachment).toBeDefined();
+    if (firstAttachment !== undefined) {
+      expect("storagePath" in firstAttachment).toBe(false);
+    }
   });
 
   it("initializes upload and finalizes the pending attachment", async () => {
@@ -56,5 +83,19 @@ describe("attachmentService", () => {
 
     await expect(attachmentService.authorizeDownload(attachment.id)).resolves.toMatchObject({ downloadUrl: "https://r2.example/download" });
     await expect(attachmentService.deleteAttachment(attachment.id)).resolves.toEqual({ deleted: true });
+  });
+
+  it("requests, retries, checks status, and loads extracted text", async () => {
+    server.use(
+      http.post(`${env.apiBaseUrl}/attachments/:id/extraction`, () => HttpResponse.json({ success: true, data: { extraction: { ...extraction, status: "PENDING" } } }, { status: 202 })),
+      http.post(`${env.apiBaseUrl}/attachments/:id/extraction/retry`, () => HttpResponse.json({ success: true, data: { extraction: { ...extraction, status: "PENDING" } } }, { status: 202 })),
+      http.get(`${env.apiBaseUrl}/attachments/:id/extraction`, () => HttpResponse.json({ success: true, data: { extraction } })),
+      http.get(`${env.apiBaseUrl}/attachments/:id/extraction/text`, () => HttpResponse.json({ success: true, data: { extraction: { ...extraction, text: "Extracted plain text" } } }))
+    );
+
+    await expect(attachmentService.requestExtraction(attachment.id)).resolves.toMatchObject({ status: "PENDING" });
+    await expect(attachmentService.retryExtraction(attachment.id)).resolves.toMatchObject({ status: "PENDING" });
+    await expect(attachmentService.getExtractionStatus(attachment.id)).resolves.toMatchObject({ status: "COMPLETED" });
+    await expect(attachmentService.getExtractedText(attachment.id)).resolves.toMatchObject({ text: "Extracted plain text" });
   });
 });

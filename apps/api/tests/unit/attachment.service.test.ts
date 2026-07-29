@@ -84,7 +84,7 @@ describe("AttachmentService", () => {
       taskId,
       storagePath: expect.stringContaining(`organizations/${ids.organizationA}/tasks/${taskId}/attachments/`)
     }));
-    expect(result.attachment.storagePath).toContain("organizations/");
+    expect("storagePath" in result.attachment).toBe(false);
   });
 
   it("rejects disabled storage before creating pending metadata", async () => {

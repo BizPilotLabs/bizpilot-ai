@@ -12,6 +12,24 @@ export function useTaskAttachments(taskId: string | null, query: AttachmentListQ
   });
 }
 
+export function useAttachmentExtractionStatus(attachmentId: string | null) {
+  return useQuery({
+    queryKey: attachmentId === null ? attachmentQueryKeys.all : attachmentQueryKeys.extraction(attachmentId),
+    queryFn: () => attachmentService.getExtractionStatus(attachmentId ?? ""),
+    enabled: attachmentId !== null,
+    staleTime: 10_000
+  });
+}
+
+export function useExtractedAttachmentText(attachmentId: string | null, enabled: boolean) {
+  return useQuery({
+    queryKey: attachmentId === null ? attachmentQueryKeys.all : attachmentQueryKeys.extractedText(attachmentId),
+    queryFn: () => attachmentService.getExtractedText(attachmentId ?? ""),
+    enabled: attachmentId !== null && enabled,
+    staleTime: 60_000
+  });
+}
+
 export function useUploadTaskAttachment() {
   const queryClient = useQueryClient();
 
@@ -19,6 +37,30 @@ export function useUploadTaskAttachment() {
     mutationFn: (variables: UploadAttachmentVariables) => attachmentService.uploadTaskAttachment(variables.taskId, variables.file, variables.onProgress),
     onSuccess: (_attachment, variables) => {
       void queryClient.invalidateQueries({ queryKey: attachmentQueryKeys.task(variables.taskId) });
+    }
+  });
+}
+
+export function useRequestAttachmentExtraction(taskId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (attachmentId: string) => attachmentService.requestExtraction(attachmentId),
+    onSuccess: (extraction, attachmentId) => {
+      void queryClient.invalidateQueries({ queryKey: attachmentQueryKeys.task(taskId) });
+      queryClient.setQueryData(attachmentQueryKeys.extraction(attachmentId), extraction);
+    }
+  });
+}
+
+export function useRetryAttachmentExtraction(taskId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (attachmentId: string) => attachmentService.retryExtraction(attachmentId),
+    onSuccess: (extraction, attachmentId) => {
+      void queryClient.invalidateQueries({ queryKey: attachmentQueryKeys.task(taskId) });
+      queryClient.setQueryData(attachmentQueryKeys.extraction(attachmentId), extraction);
     }
   });
 }

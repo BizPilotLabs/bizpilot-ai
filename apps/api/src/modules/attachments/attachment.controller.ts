@@ -62,6 +62,30 @@ export class AttachmentController {
     sendSuccess(response, 200, download);
   }
 
+  public async requestExtraction(request: AttachmentRequest, response: Response): Promise<void> {
+    const params = attachmentIdParamsSchema.parse(request.params);
+    const extraction = await attachmentService.requestExtraction({ organizationId: request.auth.organizationId, actorUserId: request.auth.userId, attachmentId: params.id, metadata: toMetadata(request) });
+    sendSuccess(response, 202, { extraction });
+  }
+
+  public async getExtractionStatus(request: AttachmentRequest, response: Response): Promise<void> {
+    const params = attachmentIdParamsSchema.parse(request.params);
+    const extraction = await attachmentService.getExtractionStatus({ organizationId: request.auth.organizationId, attachmentId: params.id });
+    sendSuccess(response, 200, { extraction });
+  }
+
+  public async retryExtraction(request: AttachmentRequest, response: Response): Promise<void> {
+    const params = attachmentIdParamsSchema.parse(request.params);
+    const extraction = await attachmentService.retryExtraction({ organizationId: request.auth.organizationId, actorUserId: request.auth.userId, attachmentId: params.id, metadata: toMetadata(request) });
+    sendSuccess(response, 202, { extraction });
+  }
+
+  public async getExtractedText(request: AttachmentRequest, response: Response): Promise<void> {
+    const params = attachmentIdParamsSchema.parse(request.params);
+    const extraction = await attachmentService.getExtractedText({ organizationId: request.auth.organizationId, attachmentId: params.id });
+    sendSuccess(response, 200, { extraction });
+  }
+
   public async deleteAttachment(request: AttachmentRequest, response: Response): Promise<void> {
     const params = attachmentIdParamsSchema.parse(request.params);
     await attachmentService.deleteAttachment({

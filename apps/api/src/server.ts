@@ -2,6 +2,7 @@ import http from "node:http";
 
 import { createApp } from "./app.js";
 import { config } from "./config/index.js";
+import { backgroundJobDispatcher } from "./core/background/index.js";
 import { connectDatabase, disconnectDatabase } from "./core/database/index.js";
 import { logger } from "./core/logger/index.js";
 import { connectRedis, disconnectRedis } from "./core/redis/index.js";
@@ -32,6 +33,7 @@ const shutdown = (signal: NodeJS.Signals): void => {
           process.exitCode = 1;
         }
 
+        await backgroundJobDispatcher.shutdown(config.shutdownTimeoutMs);
         await disconnectRedis();
         await disconnectDatabase();
         logger.info("Application shutdown completed");

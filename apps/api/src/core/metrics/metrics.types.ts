@@ -5,6 +5,8 @@ export type MetricsStoreType = "memory" | "redis";
 export type MetricsRateLimitDimension = "user" | "organization";
 export type MetricsDependencyName = "redis" | "ai_provider" | "ai_rate_limit" | "application";
 export type MetricsTokenDirection = "input" | "output" | "total";
+export type AttachmentExtractionResult = "requested" | "completed" | "failed" | "unsupported";
+export type BackgroundJobResult = "accepted" | "duplicate" | "rejected" | "shutting_down" | "failed";
 
 export interface HttpMetricLabels {
   method: string;
@@ -30,6 +32,26 @@ export interface AiRateLimitMetricLabels {
   outcome: MetricsOutcome;
 }
 
+
+export interface AttachmentExtractionMetricLabels {
+  mimeCategory: string;
+  extractor: string;
+  result: AttachmentExtractionResult;
+  truncated: "true" | "false";
+}
+
+export interface BackgroundJobMetricLabels {
+  workerType: string;
+  jobName: string;
+  result: BackgroundJobResult;
+}
+
+export interface BackgroundWorkerStateLabels {
+  workerType: string;
+  activeCount: number;
+  queuedCount: number;
+}
+
 export interface RedisHealthMetricLabels {
   status: MetricsStatus;
   enabled: "true" | "false";
@@ -51,6 +73,9 @@ export interface MetricsClient {
   observeAiRateLimitCommand(store: MetricsStoreType, outcome: MetricsOutcome, durationSeconds: number): void;
   recordRedisCommandFailure(operation: string, failureCategory: string): void;
   observeRedisHealth(labels: RedisHealthMetricLabels, durationSeconds: number): void;
+  recordAttachmentExtraction(labels: AttachmentExtractionMetricLabels, durationSeconds: number): void;
+  recordBackgroundJob(labels: BackgroundJobMetricLabels): void;
+  setBackgroundWorkerState(labels: BackgroundWorkerStateLabels): void;
   setDependencyState(dependency: MetricsDependencyName, status: MetricsStatus, value: number): void;
   metrics(): Promise<string>;
   contentType(): string;

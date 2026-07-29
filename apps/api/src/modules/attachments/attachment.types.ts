@@ -1,7 +1,19 @@
-import type { Attachment, AttachmentStatus } from "@prisma/client";
+import type { Attachment, AttachmentExtractionStatus, AttachmentStatus } from "@prisma/client";
 import type { AuthenticatedRequest } from "../auth/auth.types.js";
 
-export interface AttachmentResponse {
+export interface AttachmentExtractionFields {
+  extractionStatus: AttachmentExtractionStatus;
+  extractionErrorCode: string | null;
+  extractionRequestedAt: Date | null;
+  extractionStartedAt: Date | null;
+  extractionCompletedAt: Date | null;
+  extractorName: string | null;
+  extractorVersion: string | null;
+  extractedCharacterCount: number | null;
+  extractionTruncated: boolean;
+}
+
+export interface AttachmentResponse extends AttachmentExtractionFields {
   id: string;
   organizationId: string;
   taskId: string;
@@ -10,7 +22,6 @@ export interface AttachmentResponse {
   storedName: string;
   mimeType: string;
   fileSize: number;
-  storagePath: string;
   provider: string;
   status: AttachmentStatus;
   uploadExpiresAt: Date | null;

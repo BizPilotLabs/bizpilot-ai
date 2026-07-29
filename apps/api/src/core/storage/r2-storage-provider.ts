@@ -1,12 +1,46 @@
 import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { Readable } from "node:stream";
 
 import { env } from "../../config/index.js";
-import type { CreateDownloadUrlInput, CreateUploadUrlInput, StorageObjectMetadata, StorageProvider } from "./storage.types.js";
+import { AppError } from "../errors/index.js";
+import type { CreateDownloadUrlInput, CreateUploadUrlInput, GetObjectContentInput, StorageObjectContent, StorageObjectMetadata, StorageProvider } from "./storage.types.js";
 
 const contentDispositionFilename = (filename: string): string => {
   const safeFilename = filename.replace(/["\r\n\\]/gu, "_");
   return `attachment; filename="${safeFilename}"`;
+};
+
+const streamToBuffer = async (stream: Readable, maxBytes: number): Promise<Buffer> => {
+  const chunks: Buffer[] = [];
+  let totalBytes = 0;
+
+  for await (const chunk of stream) {
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as Uint8Array);
+    totalBytes += buffer.byteLength;
+
+    if (totalBytes > maxBytes) {
+      stream.destroy();
+      throw new AppError({ statusCode: 413, message: "Stored object is too large to process.", code: "STORAGE_OBJECT_TOO_LARGE" });
+    }
+
+    chunks.push(buffer);
+  }
+
+  return Buffer.concat(chunks, totalBytes);
+};
+
+const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+  let timeout: NodeJS.Timeout | undefined;
+  const timeoutPromise = new Promise<never>((_resolve, reject) => {
+    timeout = setTimeout(() => reject(new AppError({ statusCode: 504, message: "Storage object retrieval timed out.", code: "STORAGE_RETRIEVAL_TIMEOUT" })), timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeout !== undefined) clearTimeout(timeout);
+  }
 };
 
 export class R2StorageProvider implements StorageProvider {
@@ -60,6 +94,34 @@ export class R2StorageProvider implements StorageProvider {
       return {
         contentLength: result.ContentLength ?? null,
         contentType: result.ContentType ?? null
+      };
+    } catch (error) {
+      const name = error instanceof Error ? error.name : "";
+      if (name === "NotFound" || name === "NoSuchKey" || name === "S3ServiceException") {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  public async getObjectContent(input: GetObjectContentInput): Promise<StorageObjectContent | null> {
+    try {
+      const result = await withTimeout(this.client.send(new GetObjectCommand({ Bucket: this.bucketName, Key: input.key })), input.timeoutMs);
+
+      if (result.ContentLength !== undefined && result.ContentLength > input.maxBytes) {
+        throw new AppError({ statusCode: 413, message: "Stored object is too large to process.", code: "STORAGE_OBJECT_TOO_LARGE" });
+      }
+
+      if (!(result.Body instanceof Readable)) {
+        throw new AppError({ statusCode: 502, message: "Stored object could not be read.", code: "STORAGE_OBJECT_UNREADABLE" });
+      }
+
+      return {
+        body: await withTimeout(streamToBuffer(result.Body, input.maxBytes), input.timeoutMs),
+        metadata: {
+          contentLength: result.ContentLength ?? null,
+          contentType: result.ContentType ?? null
+        }
       };
     } catch (error) {
       const name = error instanceof Error ? error.name : "";

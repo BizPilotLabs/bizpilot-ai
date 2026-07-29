@@ -336,3 +336,16 @@ Metric recording is in-process and does not perform network I/O. No request payl
 ## Recommended Next Milestone
 
 Add production deployment manifests or infrastructure documentation that defines how Prometheus scrapes this endpoint securely, including reverse-proxy restrictions, secret injection and environment-specific alert thresholds.
+## Attachment Extraction Metrics
+
+Attachment text extraction adds low-cardinality Prometheus series only:
+
+- `bizpilot_attachment_extraction_results_total`
+- `bizpilot_attachment_extraction_duration_seconds`
+- `bizpilot_background_jobs_total`
+- `bizpilot_background_worker_active_jobs`
+- `bizpilot_background_worker_queued_jobs`
+
+Labels must remain limited to MIME category, extractor, result category, truncation, worker type, and job name. Do not add attachment IDs, organization IDs, task IDs, filenames, object keys, extracted text, or raw error messages as metric labels.
+
+Operational details and recovery guidance live in `docs/attachment-text-extraction.md`.

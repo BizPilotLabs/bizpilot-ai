@@ -4,6 +4,10 @@ import type {
   Attachment,
   AttachmentDeleteResponse,
   AttachmentDownloadResponse,
+  AttachmentExtractedText,
+  AttachmentExtractedTextResponse,
+  AttachmentExtractionResponse,
+  AttachmentExtractionSummary,
   AttachmentListQuery,
   AttachmentListResult,
   AttachmentMutationResponse,
@@ -76,6 +80,26 @@ export const attachmentService = {
     return this.finalizeAttachmentUpload(upload.attachment.id);
   },
 
+  async requestExtraction(attachmentId: string): Promise<AttachmentExtractionSummary> {
+    const result = unwrap(await httpClient.post<ApiSuccessResponse<AttachmentExtractionResponse>>(`/attachments/${attachmentId}/extraction`, {}));
+    return result.extraction;
+  },
+
+  async retryExtraction(attachmentId: string): Promise<AttachmentExtractionSummary> {
+    const result = unwrap(await httpClient.post<ApiSuccessResponse<AttachmentExtractionResponse>>(`/attachments/${attachmentId}/extraction/retry`, {}));
+    return result.extraction;
+  },
+
+  async getExtractionStatus(attachmentId: string): Promise<AttachmentExtractionSummary> {
+    const result = unwrap(await httpClient.get<ApiSuccessResponse<AttachmentExtractionResponse>>(`/attachments/${attachmentId}/extraction`));
+    return result.extraction;
+  },
+
+  async getExtractedText(attachmentId: string): Promise<AttachmentExtractedText> {
+    const result = unwrap(await httpClient.get<ApiSuccessResponse<AttachmentExtractedTextResponse>>(`/attachments/${attachmentId}/extraction/text`));
+    return result.extraction;
+  },
+
   async authorizeDownload(attachmentId: string): Promise<AttachmentDownloadResponse> {
     return unwrap(await httpClient.get<ApiSuccessResponse<AttachmentDownloadResponse>>(`/attachments/${attachmentId}/download`));
   },
@@ -84,4 +108,3 @@ export const attachmentService = {
     return unwrap(await httpClient.delete<ApiSuccessResponse<AttachmentDeleteResponse>>(`/attachments/${attachmentId}`));
   }
 };
-
