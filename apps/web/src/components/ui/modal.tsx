@@ -12,7 +12,7 @@ export interface ModalProps {
   footer?: ReactNode;
   className?: string;
   closeLabel?: string;
-  initialFocusRef?: RefObject<HTMLElement>;
+  initialFocusRef?: RefObject<HTMLElement | null>;
 }
 
 export function Modal({ open, onOpenChange, title, description, children, footer, className, closeLabel = "Close modal", initialFocusRef }: ModalProps): ReactElement {
@@ -22,6 +22,10 @@ export function Modal({ open, onOpenChange, title, description, children, footer
   const generatedId = useId();
   const titleId = `${generatedId}-title`;
   const descriptionId = description !== undefined && description.trim().length > 0 ? `${generatedId}-description` : undefined;
+
+  const restorePreviousFocus = (): void => {
+    requestAnimationFrame(() => previousFocusRef.current?.focus());
+  };
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -39,12 +43,13 @@ export function Modal({ open, onOpenChange, title, description, children, footer
 
     if (!open && dialog.open) {
       dialog.close();
+      restorePreviousFocus();
     }
   }, [initialFocusRef, open]);
 
   const handleClose = (): void => {
     onOpenChange(false);
-    requestAnimationFrame(() => previousFocusRef.current?.focus());
+    restorePreviousFocus();
   };
 
   return (

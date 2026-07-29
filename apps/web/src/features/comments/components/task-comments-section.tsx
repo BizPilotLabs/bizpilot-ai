@@ -1,6 +1,6 @@
 import { MessageSquare, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useMemo, useState, type FormEvent, type ReactElement } from "react";
-import { Avatar, Badge, Button, Card, CardContent, CardHeader, CardTitle, Dropdown, DropdownButton, Modal, Pagination, Skeleton, Textarea } from "@/components/ui";
+import { Avatar, Badge, Button, Card, CardContent, CardHeader, CardTitle, ConfirmationDialog, Dropdown, DropdownButton, Pagination, Skeleton, Textarea } from "@/components/ui";
 import { useToast } from "@/hooks";
 import { useAuthStore } from "@/store";
 import { commentContentSchema } from "../schemas";
@@ -208,21 +208,19 @@ export function TaskCommentsSection({ commentCount, taskId }: TaskCommentsSectio
         ) : null}
         {pagination !== undefined && pagination.totalPages > 1 ? <Pagination className="justify-center" page={pagination.page} totalPages={pagination.totalPages} onPageChange={setPage} /> : null}
       </CardContent>
-      <Modal
+      <ConfirmationDialog
         open={commentToDelete !== null}
-        onOpenChange={(open) => !deleteComment.isPending && !open && setCommentToDelete(null)}
+        onOpenChange={(open) => !open && setCommentToDelete(null)}
         title="Delete Comment"
-        description="Are you sure you want to delete this comment? This action cannot be undone."
-        footer={
-          <>
-            <Button disabled={deleteComment.isPending} type="button" variant="neutral" onClick={() => setCommentToDelete(null)}>Cancel</Button>
-            <Button isLoading={deleteComment.isPending} type="button" variant="danger" onClick={() => void handleDelete()}>Delete comment</Button>
-          </>
-        }
+        description="This comment will be soft deleted and removed from this task conversation."
+        confirmLabel="Delete comment"
+        isPending={deleteComment.isPending}
+        onConfirm={() => void handleDelete()}
       >
-        <p className="text-sm text-muted-foreground">The comment will be soft deleted and removed from this task conversation.</p>
-      </Modal>
+        <p>The comment will no longer appear in the active task conversation.</p>
+      </ConfirmationDialog>
     </Card>
   );
 }
+
 

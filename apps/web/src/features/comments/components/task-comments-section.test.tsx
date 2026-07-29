@@ -125,7 +125,7 @@ describe("TaskCommentsSection", () => {
     await user.click(await screen.findByRole("button", { name: "Comment actions" }));
     await user.click(screen.getByRole("menuitem", { name: /Delete/ }));
     const dialog = screen.getByRole("dialog", { name: "Delete Comment" });
-    expect(dialog).toHaveAccessibleDescription("Are you sure you want to delete this comment? This action cannot be undone.");
+    expect(dialog).toHaveAccessibleDescription("This comment will be soft deleted and removed from this task conversation.");
     expect(within(dialog).getByRole("button", { name: "Delete comment" })).not.toHaveFocus();
     await user.click(within(dialog).getByRole("button", { name: "Delete comment" }));
 

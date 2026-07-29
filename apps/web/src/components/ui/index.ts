@@ -12,6 +12,8 @@ export { buttonVariants } from "./button.variants";
 export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./card";
 export { Checkbox } from "./checkbox";
 export type { CheckboxProps } from "./checkbox";
+export { ConfirmationDialog } from "./confirmation-dialog";
+export type { ConfirmationDialogProps } from "./confirmation-dialog";
 export { Drawer } from "./drawer";
 export type { DrawerProps } from "./drawer";
 export { Dropdown, DropdownButton, DropdownLink } from "./dropdown";
@@ -45,4 +47,3 @@ export type { ToastProviderProps, ToastViewportProps } from "./toast";
 export type { ToastContextValue, ToastMessage } from "./toast-context";
 export { Tooltip } from "./tooltip";
 export type { TooltipProps } from "./tooltip";
-

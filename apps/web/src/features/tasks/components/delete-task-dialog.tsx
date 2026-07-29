@@ -1,5 +1,5 @@
 import { useEffect, type ReactElement } from "react";
-import { Alert, Button, Modal } from "@/components/ui";
+import { ConfirmationDialog } from "@/components/ui";
 import { useToast } from "@/hooks";
 import { getTaskErrorMessage, useDeleteTask } from "../hooks";
 import type { Task } from "../types";
@@ -19,12 +19,6 @@ export function DeleteTaskDialog({ task, open, onOpenChange }: DeleteTaskDialogP
       deleteTask.reset();
     }
   }, [deleteTask, open]);
-
-  const handleOpenChange = (nextOpen: boolean): void => {
-    if (!deleteTask.isPending) {
-      onOpenChange(nextOpen);
-    }
-  };
 
   const handleDelete = async (): Promise<void> => {
     if (task === null) {
@@ -49,33 +43,18 @@ export function DeleteTaskDialog({ task, open, onOpenChange }: DeleteTaskDialogP
   };
 
   return (
-    <Modal
+    <ConfirmationDialog
       open={open}
-      onOpenChange={handleOpenChange}
+      onOpenChange={onOpenChange}
       title="Delete Task"
-      footer={
-        <>
-          <Button disabled={deleteTask.isPending} type="button" variant="neutral" onClick={() => handleOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button isLoading={deleteTask.isPending} type="button" variant="danger" onClick={() => void handleDelete()}>
-            Delete
-          </Button>
-        </>
-      }
+      description="This task will be soft deleted and hidden from active task lists."
+      confirmLabel="Delete task"
+      error={deleteTask.isError ? getTaskErrorMessage(deleteTask.error) : null}
+      errorTitle="Unable to delete task"
+      isPending={deleteTask.isPending}
+      onConfirm={() => void handleDelete()}
     >
-      <div className="grid gap-4">
-        <p className="text-sm leading-6 text-muted-foreground">
-          Are you sure you want to delete this task?
-          <br />
-          This action cannot be undone.
-        </p>
-        {deleteTask.isError ? (
-          <Alert variant="danger" title="Unable to delete task">
-            {getTaskErrorMessage(deleteTask.error)}
-          </Alert>
-        ) : null}
-      </div>
-    </Modal>
+      <p>{task === null ? "This task" : task.title} will be removed from active task lists. Comments and attachments remain under the existing soft-delete policy.</p>
+    </ConfirmationDialog>
   );
 }
