@@ -277,5 +277,5 @@ Frontend coverage includes:
 
 ## Recommended Next Milestone
 
-Add production metrics and alerting for AI provider errors, Redis governance failures and rate-limit pressure. After that, add a small admin-safe AI status panel once the settings architecture is finalized.
+Production metrics and alerting readiness are documented in `docs/observability.md`. Next, add deployment-specific scrape configuration and alert thresholds, then add a small admin-safe AI status panel once the settings architecture is finalized.
 

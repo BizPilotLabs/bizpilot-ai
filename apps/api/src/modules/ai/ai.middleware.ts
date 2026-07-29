@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import type { NextFunction, Request, RequestHandler, Response } from "express";
+import { metricsClient } from "../../core/metrics/index.js";
 import { createAiError } from "./ai.failure.js";
 import { aiRateLimitStore, applyAiRateLimitHeaders, isRedisRateLimitFailure, resetAiRateLimitStoreForTests } from "./ai.rate-limit.js";
 import { aiRepository } from "./ai.repository.js";
@@ -47,6 +48,7 @@ export const aiRateLimit: RequestHandler = (request: Request, response: Response
 
   void aiRateLimitStore.consume({ userId: authenticatedRequest.auth.userId, organizationId: authenticatedRequest.auth.organizationId })
     .then(async (result) => {
+      metricsClient.recordAiRateLimit({ store: result.store, dimension: result.dimension, outcome: result.allowed ? "allowed" : "rejected" });
       applyAiRateLimitHeaders(response, result);
       if (!result.allowed) {
         await recordLimiterRejection(authenticatedRequest, "rate_limited");
@@ -56,6 +58,7 @@ export const aiRateLimit: RequestHandler = (request: Request, response: Response
       next();
     })
     .catch((error: unknown) => {
+      metricsClient.recordAiRateLimit({ store: isRedisRateLimitFailure(error) ? "redis" : "memory", dimension: "organization", outcome: "failed" });
       void recordLimiterRejection(authenticatedRequest, isRedisRateLimitFailure(error) ? "rate_limit_store_unavailable" : "context_unavailable")
         .finally(() => {
           next(createAiError(isRedisRateLimitFailure(error) ? "AI_RATE_LIMIT_STORE_UNAVAILABLE" : "AI_CONTEXT_UNAVAILABLE"));

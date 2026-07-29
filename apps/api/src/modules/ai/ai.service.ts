@@ -3,6 +3,7 @@ import { performance } from "node:perf_hooks";
 
 import { env } from "../../config/index.js";
 import { logger } from "../../core/logger/index.js";
+import { metricsClient } from "../../core/metrics/index.js";
 import { aiContextBuilder, hasAiPermission } from "./ai.context.js";
 import { aiFailureDefinitions, createAiError, durationCategory, getAiFailureDefinition } from "./ai.failure.js";
 import { aiHealthService } from "./ai.health.js";
@@ -74,7 +75,9 @@ export class AiService {
     let sourceCount = 0;
 
     try {
+      const contextStartedAt = performance.now();
       const { context, permissions } = await aiContextBuilder.build(input);
+      metricsClient.observeAiContextDuration(input.request.scope.type, (performance.now() - contextStartedAt) / 1000);
       sourceCount = context.sources.length;
 
       if (!hasAiPermission(permissions, "ai.use")) {
@@ -84,6 +87,8 @@ export class AiService {
       if (writeIntentPattern.test(input.request.question)) {
         const durationMs = performance.now() - start;
         await this.recordUsage({ ...input, requestId, action: "ai.query.refused", provider: refusalProviderMetadata.provider, model: refusalProviderMetadata.model, durationMs, sourceCount, resultCategory: aiFailureDefinitions.AI_READ_ONLY_REFUSED.resultCategory, success: true });
+        metricsClient.recordAiQuery({ scopeType: input.request.scope.type, resultCategory: aiFailureDefinitions.AI_READ_ONLY_REFUSED.resultCategory, provider: refusalProviderMetadata.provider, model: refusalProviderMetadata.model }, durationMs / 1000);
+        metricsClient.observeAiSourceCount(input.request.scope.type, 0);
         logger.info({ requestId, organizationId: input.organizationId, userId: input.userId, scope: input.request.scope, resultCategory: aiFailureDefinitions.AI_READ_ONLY_REFUSED.resultCategory, durationCategory: durationCategory(durationMs), sourceCount }, "AI copilot refused write-intent request");
         return {
           requestId,
@@ -97,12 +102,19 @@ export class AiService {
       }
 
       const prompt = buildAiPrompt({ question: input.request.question, context, ...(input.request.history === undefined ? {} : { history: input.request.history }) });
+      const providerStartedAt = performance.now();
       const providerResponse = await aiProvider.generate({ prompt, maxOutputCharacters: env.AI_MAX_OUTPUT_CHARS });
+      metricsClient.observeAiProviderDuration(providerResponse.metadata.provider, providerResponse.metadata.model, (performance.now() - providerStartedAt) / 1000);
       const validation = validateAnswer(providerResponse.answer, context.sources);
       const durationMs = performance.now() - start;
       const resultCategory = validation.unverifiedMarkerCount > 0 ? "success_with_unverified_sources" : "success";
 
       await this.recordUsage({ ...input, requestId, action: "ai.query", provider: providerResponse.metadata.provider, model: providerResponse.metadata.model, durationMs, sourceCount: validation.sources.length, resultCategory, success: true, usage: providerResponse.usage });
+      metricsClient.recordAiQuery({ scopeType: input.request.scope.type, resultCategory, provider: providerResponse.metadata.provider, model: providerResponse.metadata.model }, durationMs / 1000);
+      metricsClient.observeAiSourceCount(input.request.scope.type, validation.sources.length);
+      metricsClient.incrementAiTokens(providerResponse.metadata.provider, providerResponse.metadata.model, "input", providerResponse.usage?.inputTokens ?? 0);
+      metricsClient.incrementAiTokens(providerResponse.metadata.provider, providerResponse.metadata.model, "output", providerResponse.usage?.outputTokens ?? 0);
+      metricsClient.incrementAiTokens(providerResponse.metadata.provider, providerResponse.metadata.model, "total", providerResponse.usage?.totalTokens ?? 0);
       logger.info({ requestId, organizationId: input.organizationId, userId: input.userId, scope: input.request.scope, provider: providerResponse.metadata.provider, model: providerResponse.metadata.model, durationCategory: durationCategory(durationMs), sourceCount: validation.sources.length, resultCategory, inputTokens: providerResponse.usage?.inputTokens, outputTokens: providerResponse.usage?.outputTokens }, "AI copilot query completed");
 
       return {
@@ -122,6 +134,9 @@ export class AiService {
       const durationMs = performance.now() - start;
       const definition = getAiFailureDefinition(error);
       await this.recordUsage({ ...input, requestId, action: "ai.query.failed", provider: aiProvider.metadata.provider, model: aiProvider.metadata.model, durationMs, sourceCount, resultCategory: definition.resultCategory, success: false });
+      metricsClient.recordAiQuery({ scopeType: input.request.scope.type, resultCategory: definition.resultCategory, provider: aiProvider.metadata.provider, model: aiProvider.metadata.model }, durationMs / 1000);
+      metricsClient.recordAiFailure({ failureCategory: definition.resultCategory, provider: aiProvider.metadata.provider });
+      metricsClient.observeAiSourceCount(input.request.scope.type, sourceCount);
       logger.warn({ requestId, organizationId: input.organizationId, userId: input.userId, scope: input.request.scope, resultCategory: definition.resultCategory, durationCategory: durationCategory(durationMs), sourceCount }, "AI copilot query failed");
       throw error;
     }

@@ -10,6 +10,25 @@ const aiProviderMock = vi.hoisted(() => ({
   generate: vi.fn(),
   health: vi.fn()
 }));
+const metricsClientMock = vi.hoisted(() => ({
+  recordHttpRequest: vi.fn(),
+  incrementActiveHttpRequests: vi.fn(),
+  decrementActiveHttpRequests: vi.fn(),
+  recordAiQuery: vi.fn(),
+  recordAiFailure: vi.fn(),
+  observeAiProviderDuration: vi.fn(),
+  observeAiContextDuration: vi.fn(),
+  observeAiSourceCount: vi.fn(),
+  incrementAiTokens: vi.fn(),
+  recordAiRateLimit: vi.fn(),
+  observeAiRateLimitCommand: vi.fn(),
+  recordRedisCommandFailure: vi.fn(),
+  observeRedisHealth: vi.fn(),
+  setDependencyState: vi.fn(),
+  metrics: vi.fn().mockResolvedValue(""),
+  contentType: vi.fn().mockReturnValue("text/plain; version=0.0.4; charset=utf-8"),
+  reset: vi.fn()
+}));
 const aiRepositoryMock = vi.hoisted(() => ({
   getPermissionContext: vi.fn(),
   getOrganization: vi.fn(),
@@ -25,7 +44,10 @@ const aiRepositoryMock = vi.hoisted(() => ({
   recordUsage: vi.fn()
 }));
 
-vi.mock("../../src/modules/auth/auth.service.js", () => ({ authService: authServiceMock }));
+vi.mock("../../src/core/metrics/index.js", async (importOriginal) => {
+  const actual = await importOriginal();
+  return { ...(actual as object), metricsClient: metricsClientMock };
+});vi.mock("../../src/modules/auth/auth.service.js", () => ({ authService: authServiceMock }));
 vi.mock("../../src/modules/rbac/rbac.repository.js", () => ({ rbacRepository: rbacRepositoryMock }));
 vi.mock("../../src/modules/ai/ai.provider.js", () => ({ aiProvider: aiProviderMock }));
 vi.mock("../../src/modules/ai/ai.repository.js", () => ({ aiRepository: aiRepositoryMock }));
@@ -97,6 +119,9 @@ describe("AI Copilot routes", () => {
     expect(response.body.data.sources).toEqual(expect.arrayContaining([expect.objectContaining({ type: "project", appRoute: `/app/projects/${projectId}` })]));
     expect(JSON.stringify(response.body)).not.toContain("storagePath");
     expect(aiRepositoryMock.recordUsage).toHaveBeenCalledWith(expect.objectContaining({ action: "ai.query", organizationId: ids.organizationA, userId: ids.ownerUser, userAgent: "ai-route-test" }));
+    expect(metricsClientMock.recordAiQuery).toHaveBeenCalledWith(expect.objectContaining({ scopeType: "organization", resultCategory: "success", provider: "test", model: "fake-model" }), expect.any(Number));
+    expect(metricsClientMock.observeAiProviderDuration).toHaveBeenCalledWith("test", "fake-model", expect.any(Number));
+    expect(metricsClientMock.incrementAiTokens).toHaveBeenCalledWith("test", "fake-model", "total", 18);
   });
 
   it("validates project scope inside the authenticated organization", async () => {
@@ -148,6 +173,7 @@ describe("AI Copilot routes", () => {
     expect(response.body.data.sources).toEqual([]);
     expect(aiProviderMock.generate).not.toHaveBeenCalled();
     expect(aiRepositoryMock.recordUsage).toHaveBeenCalledWith(expect.objectContaining({ action: "ai.query.refused" }));
+    expect(metricsClientMock.recordAiQuery).toHaveBeenCalledWith(expect.objectContaining({ resultCategory: "read_only_refused", provider: "policy" }), expect.any(Number));
   });
 
   it("passes stored prompt-injection text as delimited data, not executable instructions", async () => {
@@ -216,6 +242,7 @@ describe("AI Copilot routes", () => {
     expect(response.status).toBe(504);
     expect(response.body).toMatchObject({ success: false, error: { code: "AI_PROVIDER_TIMEOUT" } });
     expect(aiRepositoryMock.recordUsage).toHaveBeenCalledWith(expect.objectContaining({ action: "ai.query.failed", metadata: expect.objectContaining({ resultCategory: "provider_timeout", success: false }) }));
+    expect(metricsClientMock.recordAiFailure).toHaveBeenCalledWith({ failureCategory: "provider_timeout", provider: "test" });
     expect(JSON.stringify(aiRepositoryMock.recordUsage.mock.calls)).not.toContain("Summarize progress");
   });
 
@@ -241,6 +268,7 @@ describe("AI Copilot routes", () => {
     expect(response.status).toBe(200);
     expect(response.headers["x-ai-ratelimit-store"]).toBe("redis");
     expect(response.headers["x-ai-ratelimit-distributed"]).toBe("true");
+    expect(metricsClientMock.recordAiRateLimit).toHaveBeenCalledWith({ store: "redis", dimension: "user", outcome: "allowed" });
     expect(aiProviderMock.generate).toHaveBeenCalledTimes(1);
   });
 
@@ -256,6 +284,7 @@ describe("AI Copilot routes", () => {
     expect(response.status).toBe(503);
     expect(response.body).toMatchObject({ success: false, error: { code: "AI_RATE_LIMIT_STORE_UNAVAILABLE" } });
     expect(aiProviderMock.generate).not.toHaveBeenCalled();
+    expect(metricsClientMock.recordAiRateLimit).toHaveBeenCalledWith({ store: "redis", dimension: "organization", outcome: "failed" });
     expect(JSON.stringify(response.body)).not.toContain("redis://");
     expect(aiRepositoryMock.recordUsage).toHaveBeenCalledWith(expect.objectContaining({ action: "ai.query.failed", metadata: expect.objectContaining({ resultCategory: "rate_limit_store_unavailable", success: false }) }));
   });

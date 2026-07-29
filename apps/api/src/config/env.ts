@@ -25,6 +25,11 @@ const environmentSchema = z.object({
   REFRESH_TOKEN_COOKIE_NAME: z.string().min(1).default("bizpilot_refresh_token"),
   CORS_ORIGIN: z.string().min(1).default("http://localhost:3000"),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
+  METRICS_ENABLED: booleanSchema.default(false),
+  METRICS_PATH: z.string().trim().regex(/^\/[a-zA-Z0-9/_-]*$/u).default("/metrics"),
+  METRICS_AUTH_TOKEN: z.string().min(24).optional(),
+  METRICS_DEFAULT_METRICS_ENABLED: booleanSchema.default(true),
+  METRICS_PREFIX: z.string().trim().min(1).max(32).regex(/^[a-zA-Z_:][a-zA-Z0-9_:]*$/u).default("bizpilot"),
   SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
   STORAGE_PROVIDER: z.enum(["disabled", "r2"]).default("disabled"),
   R2_ACCOUNT_ID: z.string().min(1).optional(),
@@ -56,6 +61,10 @@ const environmentSchema = z.object({
   AI_HEALTH_CACHE_TTL_MS: z.coerce.number().int().positive().max(300_000).default(60_000),
   AI_HEALTH_TIMEOUT_MS: z.coerce.number().int().positive().max(30_000).default(3_000),
 }).superRefine((value, context) => {
+  if (value.METRICS_ENABLED && (value.METRICS_AUTH_TOKEN === undefined || value.METRICS_AUTH_TOKEN.trim().length === 0)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["METRICS_AUTH_TOKEN"], message: "METRICS_AUTH_TOKEN is required when metrics are enabled." });
+  }
+
   if (value.AI_RATE_LIMIT_STORE === "redis" && (value.REDIS_URL === undefined || value.REDIS_URL.trim().length === 0)) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["REDIS_URL"], message: "REDIS_URL is required when AI_RATE_LIMIT_STORE is redis." });
   }

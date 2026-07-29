@@ -5,6 +5,7 @@ import helmet from "helmet";
 
 import { config } from "./config/index.js";
 import { errorHandler, notFoundHandler, requestLogger } from "./core/middleware/index.js";
+import { httpMetrics, setupMetricsEndpoint } from "./core/metrics/index.js";
 import { setupSwaggerDocs } from "./docs/swagger.js";
 import { routes } from "./routes.js";
 
@@ -15,6 +16,7 @@ export const createApp = (): Express => {
   app.set("trust proxy", 1);
 
   app.use(requestLogger);
+  app.use(httpMetrics);
   app.use(helmet());
   app.use(
     cors({
@@ -26,6 +28,7 @@ export const createApp = (): Express => {
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
+  setupMetricsEndpoint(app);
   setupSwaggerDocs(app);
   app.use(routes);
   app.use(notFoundHandler);

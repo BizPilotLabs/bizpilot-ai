@@ -1,5 +1,6 @@
 import { performance } from "node:perf_hooks";
 import { env } from "../../config/index.js";
+import { metricsClient } from "../../core/metrics/index.js";
 import { durationCategory } from "./ai.failure.js";
 import { aiProvider } from "./ai.provider.js";
 import { aiRateLimitStore, getAiRateLimitPolicy } from "./ai.rate-limit.js";
@@ -64,6 +65,9 @@ export class AiHealthService {
     const rateLimitReady = readiness.ready;
     const status: AiProviderHealthStatus = rateLimitReady ? providerStatus : "degraded";
     const degradedReasonCode = !rateLimitReady ? "AI_RATE_LIMIT_STORE_UNAVAILABLE" : providerStatus === "disabled" ? "AI_DISABLED" : providerHealth.available ? undefined : "AI_PROVIDER_UNAVAILABLE";
+
+    metricsClient.setDependencyState("ai_provider", providerStatus, 1);
+    metricsClient.setDependencyState("ai_rate_limit", rateLimitReady ? "healthy" : "unavailable", 1);
 
     return {
       enabled: env.AI_ENABLED,

@@ -11,15 +11,20 @@ import { permissionRoutes, roleRoutes, userRoleRoutes } from "./modules/rbac/ind
 import { taskRoutes } from "./modules/tasks/index.js";
 import { teamRoutes } from "./modules/teams/index.js";
 import { userRoutes } from "./modules/users/index.js";
+import { metricsClient } from "./core/metrics/index.js";
 import { redisConnection } from "./core/redis/index.js";
 
 export const routes: ExpressRouter = Router();
 
 routes.get("/health", async (_request, response) => {
   const redis = await redisConnection.health();
-  response.status(redis.required && !redis.available ? 503 : 200).json({
+  const degraded = redis.required && !redis.available;
+  metricsClient.setDependencyState("application", degraded ? "degraded" : "healthy", 1);
+  metricsClient.setDependencyState("redis", redis.status, 1);
+
+  response.status(degraded ? 503 : 200).json({
     success: true,
-    status: redis.required && !redis.available ? "degraded" : "ok",
+    status: degraded ? "degraded" : "ok",
     dependencies: {
       redis: {
         enabled: redis.enabled,

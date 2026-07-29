@@ -2,6 +2,7 @@ import { performance } from "node:perf_hooks";
 import { createClient, type RedisClientType } from "redis";
 import { env } from "../../config/index.js";
 import { logger } from "../logger/index.js";
+import { metricsClient } from "../metrics/index.js";
 import type { RedisCommandClient, RedisEvalOptions, RedisFailureCategory, RedisHealthState, RedisLatencyCategory } from "./redis.types.js";
 
 const latencyCategory = (durationMs: number): RedisLatencyCategory => {
@@ -10,6 +11,8 @@ const latencyCategory = (durationMs: number): RedisLatencyCategory => {
   if (durationMs >= 50) return "normal";
   return "fast";
 };
+
+const redisFailureCategory = (error: unknown): RedisFailureCategory => error instanceof RedisOperationError ? error.failureCategory : "command_failed";
 
 const timeout = <T>(promise: Promise<T>, timeoutMs: number, failureCategory: RedisFailureCategory): Promise<T> => {
   let handle: NodeJS.Timeout | undefined;
@@ -68,13 +71,23 @@ export class ManagedRedisConnection implements RedisCommandClient {
   }
 
   public async eval(script: string, options: RedisEvalOptions): Promise<unknown> {
-    const client = await this.getClient();
-    return timeout(client.eval(script, { keys: options.keys, arguments: options.arguments }), env.REDIS_COMMAND_TIMEOUT_MS, "command_timeout");
+    try {
+      const client = await this.getClient();
+      return await timeout(client.eval(script, { keys: options.keys, arguments: options.arguments }), env.REDIS_COMMAND_TIMEOUT_MS, "command_timeout");
+    } catch (error) {
+      metricsClient.recordRedisCommandFailure("eval", redisFailureCategory(error));
+      throw error;
+    }
   }
 
   public async ping(): Promise<string> {
-    const client = await this.getClient();
-    return timeout(client.ping(), env.REDIS_COMMAND_TIMEOUT_MS, "command_timeout");
+    try {
+      const client = await this.getClient();
+      return await timeout(client.ping(), env.REDIS_COMMAND_TIMEOUT_MS, "command_timeout");
+    } catch (error) {
+      metricsClient.recordRedisCommandFailure("ping", redisFailureCategory(error));
+      throw error;
+    }
   }
 
   public async health(input?: { refresh?: boolean | undefined }): Promise<RedisHealthState> {
@@ -95,6 +108,8 @@ export class ManagedRedisConnection implements RedisCommandClient {
         latencyCategory: latencyCategory(performance.now() - startedAt)
       };
       this.healthCache = { value, expiresAt: Date.now() + env.REDIS_HEALTH_CACHE_TTL_MS };
+      metricsClient.observeRedisHealth({ status: value.status, enabled: "true", required: value.required ? "true" : "false", failureCategory: "none" }, (performance.now() - startedAt) / 1000);
+      metricsClient.setDependencyState("redis", value.status, 1);
       return value;
     } catch (error) {
       const failureCategory = error instanceof RedisOperationError ? error.failureCategory : "connection_failed";
@@ -109,6 +124,8 @@ export class ManagedRedisConnection implements RedisCommandClient {
         failureCategory
       };
       this.healthCache = { value, expiresAt: Date.now() + env.REDIS_HEALTH_CACHE_TTL_MS };
+      metricsClient.observeRedisHealth({ status: value.status, enabled: "true", required: value.required ? "true" : "false", failureCategory }, (performance.now() - startedAt) / 1000);
+      metricsClient.setDependencyState("redis", value.status, 1);
       logger.warn({ store: "redis", failureCategory, required: value.required }, "Redis health check failed");
       return value;
     }
@@ -121,6 +138,7 @@ export class ManagedRedisConnection implements RedisCommandClient {
   }
 
   private disabledHealth(): RedisHealthState {
+    metricsClient.setDependencyState("redis", "disabled", 1);
     return {
       enabled: false,
       configured: env.REDIS_URL !== undefined,

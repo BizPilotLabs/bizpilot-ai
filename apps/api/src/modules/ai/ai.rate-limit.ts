@@ -1,6 +1,8 @@
 import crypto from "node:crypto";
+import { performance } from "node:perf_hooks";
 import type { Response } from "express";
 import { env } from "../../config/index.js";
+import { metricsClient } from "../../core/metrics/index.js";
 import { RedisOperationError, redisConnection, type RedisCommandClient } from "../../core/redis/index.js";
 
 export type AiRateLimitDimension = "user" | "organization";
@@ -205,10 +207,21 @@ export class RedisAiRateLimitStore implements AiRateLimitStore {
 
   public async consume(input: AiRateLimitConsumeInput): Promise<AiRateLimitResult> {
     const now = input.now ?? Date.now();
-    const [allowed, userCount, organizationCount, userTtl, organizationTtl, userExceeded, organizationExceeded] = parseRedisResult(await this.client.eval(redisConsumeScript, {
-      keys: [this.key("user", input.organizationId, input.userId, now), this.key("organization", input.organizationId, undefined, now)],
-      arguments: [String(this.policy.windowMs), String(this.policy.userLimit), String(this.policy.organizationLimit)]
-    }));
+    const startedAt = performance.now();
+    let redisResult: unknown;
+
+    try {
+      redisResult = await this.client.eval(redisConsumeScript, {
+        keys: [this.key("user", input.organizationId, input.userId, now), this.key("organization", input.organizationId, undefined, now)],
+        arguments: [String(this.policy.windowMs), String(this.policy.userLimit), String(this.policy.organizationLimit)]
+      });
+    } catch (error) {
+      metricsClient.observeAiRateLimitCommand("redis", "failed", (performance.now() - startedAt) / 1000);
+      throw error;
+    }
+
+    const [allowed, userCount, organizationCount, userTtl, organizationTtl, userExceeded, organizationExceeded] = parseRedisResult(redisResult);
+    metricsClient.observeAiRateLimitCommand("redis", allowed === 1 ? "allowed" : "rejected", (performance.now() - startedAt) / 1000);
 
     const userRemaining = Math.max(0, this.policy.userLimit - userCount);
     const organizationRemaining = Math.max(0, this.policy.organizationLimit - organizationCount);

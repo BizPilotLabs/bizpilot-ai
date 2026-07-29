@@ -10,9 +10,32 @@ const redisClientMock = vi.hoisted(() => ({
   isOpen: false
 }));
 
+const metricsClientMock = vi.hoisted(() => ({
+  recordRedisCommandFailure: vi.fn(),
+  observeRedisHealth: vi.fn(),
+  setDependencyState: vi.fn(),
+  recordHttpRequest: vi.fn(),
+  incrementActiveHttpRequests: vi.fn(),
+  decrementActiveHttpRequests: vi.fn(),
+  recordAiQuery: vi.fn(),
+  recordAiFailure: vi.fn(),
+  observeAiProviderDuration: vi.fn(),
+  observeAiContextDuration: vi.fn(),
+  observeAiSourceCount: vi.fn(),
+  incrementAiTokens: vi.fn(),
+  recordAiRateLimit: vi.fn(),
+  observeAiRateLimitCommand: vi.fn(),
+  metrics: vi.fn().mockResolvedValue(""),
+  contentType: vi.fn().mockReturnValue("text/plain; version=0.0.4; charset=utf-8"),
+  reset: vi.fn()
+}));
 const createClientMock = vi.hoisted(() => vi.fn(() => redisClientMock));
 
 vi.mock("redis", () => ({ createClient: createClientMock }));
+vi.mock("../../src/core/metrics/index.js", async (importOriginal) => {
+  const actual = await importOriginal();
+  return { ...(actual as object), metricsClient: metricsClientMock };
+});
 
 const loadRedisModule = async (overrides: Record<string, string | undefined>) => {
   vi.resetModules();
@@ -42,7 +65,8 @@ describe("ManagedRedisConnection", () => {
 
     expect(health).toMatchObject({ enabled: false, available: false, status: "disabled", failureCategory: "disabled" });
     expect(createClientMock).not.toHaveBeenCalled();
-  });
+    expect(metricsClientMock.setDependencyState).toHaveBeenCalledWith("redis", "disabled", 1);
+  }, 15_000);
 
   it("connects once, pings health, and closes gracefully", async () => {
     const { ManagedRedisConnection } = await loadRedisModule({ REDIS_ENABLED: "true", REDIS_URL: "redis://:secret@example.local:6379/0", AI_RATE_LIMIT_STORE: "memory" });
@@ -61,6 +85,8 @@ describe("ManagedRedisConnection", () => {
     expect(redisClientMock.quit).toHaveBeenCalledTimes(1);
     expect(JSON.stringify(first)).not.toContain("secret");
     expect(JSON.stringify(first)).not.toContain("example.local");
+    expect(metricsClientMock.observeRedisHealth).toHaveBeenCalledWith(expect.objectContaining({ status: "healthy", failureCategory: "none" }), expect.any(Number));
+    expect(metricsClientMock.setDependencyState).toHaveBeenCalledWith("redis", "healthy", 1);
   });
 
   it("classifies failed connections safely", async () => {
@@ -73,6 +99,8 @@ describe("ManagedRedisConnection", () => {
     expect(health).toMatchObject({ enabled: true, available: false, status: "unavailable", failureCategory: "connection_failed" });
     expect(JSON.stringify(health)).not.toContain("secret");
     expect(JSON.stringify(health)).not.toContain("example.local");
+    expect(metricsClientMock.recordRedisCommandFailure).toHaveBeenCalledWith("ping", "connection_failed");
+    expect(metricsClientMock.observeRedisHealth).toHaveBeenCalledWith(expect.objectContaining({ status: "unavailable", failureCategory: "connection_failed" }), expect.any(Number));
   });
 
   it("does not create duplicate clients for concurrent connection attempts", async () => {
