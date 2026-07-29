@@ -35,6 +35,9 @@ const environmentSchema = z.object({
   AI_MAX_OUTPUT_CHARS: z.coerce.number().int().positive().max(12_000).default(6_000),
   AI_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
   AI_RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().default(20),
+  AI_RATE_LIMIT_MAX_ORGANIZATION_REQUESTS: z.coerce.number().int().positive().default(200),
+  AI_HEALTH_CACHE_TTL_MS: z.coerce.number().int().positive().max(300_000).default(60_000),
+  AI_HEALTH_TIMEOUT_MS: z.coerce.number().int().positive().max(30_000).default(3_000),
 }).superRefine((value, context) => {
   if (value.AI_ENABLED && value.AI_PROVIDER === "disabled") {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["AI_PROVIDER"], message: "AI_PROVIDER must not be disabled when AI_ENABLED is true." });
@@ -69,4 +72,6 @@ const parseEnvironment = (): Environment => {
 };
 
 export const env = parseEnvironment();
+
+
 

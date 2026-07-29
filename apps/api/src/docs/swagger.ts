@@ -108,8 +108,9 @@ const schemas = {
   AiScope: entity({ type: { type: "string", enum: ["organization", "project", "task"] }, entityId: { type: "string", format: "uuid" } }),
   AiCopilotRequest: entity({ question: { type: "string", minLength: 1, maxLength: 1000 }, scope: { $ref: "#/components/schemas/AiScope" }, history: { type: "array", maxItems: 6, items: entity({ role: { type: "string", enum: ["user", "assistant"] }, content: { type: "string", maxLength: 1200 } }) } }),
   AiSourceReference: entity({ marker: { type: "string" }, type: { type: "string", enum: ["organization", "project", "task", "comment", "attachment", "activity", "user", "role"] }, id: { type: "string" }, label: { type: "string" }, appRoute: { type: "string" }, updatedAt: dateTime }),
-  AiCopilotResponse: entity({ requestId: { type: "string" }, answer: { type: "string" }, sources: { type: "array", items: { $ref: "#/components/schemas/AiSourceReference" } }, provider: entity({ provider: { type: "string" }, model: { type: "string" } }), usage: entity({ inputTokens: { type: "integer" }, outputTokens: { type: "integer" }, totalTokens: { type: "integer" } }), scope: { $ref: "#/components/schemas/AiScope" }, limitations: { type: "array", items: { type: "string" } } }),
-  AiHealth: entity({ available: { type: "boolean" }, provider: { type: "string" }, model: { type: "string" }, reason: { type: "string" } }),
+  AiResponseMetadata: entity({ requestId: { type: "string" }, resultCategory: { type: "string" }, durationCategory: { type: "string", enum: ["fast", "normal", "slow", "timeout"] }, sourceCount: { type: "integer" }, rateLimit: entity({ remaining: { type: "integer" }, resetAt: dateTime, retryAfterSeconds: { type: "integer" } }) }),
+  AiCopilotResponse: entity({ requestId: { type: "string" }, answer: { type: "string" }, sources: { type: "array", items: { $ref: "#/components/schemas/AiSourceReference" } }, provider: entity({ provider: { type: "string" }, model: { type: "string" } }), usage: entity({ inputTokens: { type: "integer" }, outputTokens: { type: "integer" }, totalTokens: { type: "integer" } }), metadata: { $ref: "#/components/schemas/AiResponseMetadata" }, scope: { $ref: "#/components/schemas/AiScope" }, limitations: { type: "array", items: { type: "string" } } }),
+  AiHealth: entity({ enabled: { type: "boolean" }, configured: { type: "boolean" }, available: { type: "boolean" }, status: { type: "string", enum: ["disabled", "healthy", "degraded", "unavailable"] }, provider: { type: "string" }, model: { type: "string" }, checkedAt: dateTime, latencyCategory: { type: "string", enum: ["fast", "normal", "slow", "timeout"] }, degradedReasonCode: { type: "string" }, reason: { type: "string" }, rateLimit: entity({ store: { type: "string", enum: ["memory"] }, distributed: { type: "boolean", const: false }, windowMs: { type: "integer" }, userLimit: { type: "integer" }, organizationLimit: { type: "integer" } }), persistence: entity({ promptsStored: { type: "boolean", const: false }, responsesStored: { type: "boolean", const: false }, conversationHistoryStored: { type: "boolean", const: false } }), mode: { type: "string", enum: ["read_only"] } }),
 };
 
 const openApiDefinition = {
@@ -176,6 +177,7 @@ export const openApiSpec = swaggerJSDoc(swaggerOptions) as Schema;
 export const setupSwaggerDocs = (app: Express): void => {
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiSpec, { explorer: true, customSiteTitle: "BizPilot AI API Docs" }));
 };
+
 
 
 

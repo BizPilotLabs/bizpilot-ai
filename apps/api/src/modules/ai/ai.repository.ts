@@ -4,7 +4,7 @@ import type { AiActivityContext, AiAttachmentContext, AiCommentContext, AiOrgani
 
 const userName = (user: { firstName: string; lastName: string; email: string }): string => {
   const name = `${user.firstName} ${user.lastName}`.trim();
-  return name.length > 0 ? name : user.email;
+  return name.length > 0 ? name : "Workspace member";
 };
 
 export class AiRepository {
@@ -215,7 +215,7 @@ export class AiRepository {
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: input.limit
     });
-    return users.map((user) => ({ ...user, status: user.status, roleNames: user.roles.map(({ role }) => role.name) }));
+    return users.map((user) => ({ id: user.id, displayName: `${user.firstName} ${user.lastName}`.trim() || "Workspace member", status: user.status, roleNames: user.roles.map(({ role }) => role.name), createdAt: user.createdAt }));
   }
 
   public async recordUsage(input: { userId: string; organizationId: string; action: string; metadata: Prisma.InputJsonValue; ipAddress?: string; userAgent?: string }): Promise<void> {
@@ -234,4 +234,6 @@ export class AiRepository {
 }
 
 export const aiRepository = new AiRepository();
+
+
 

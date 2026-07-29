@@ -43,8 +43,11 @@ Backend environment variables:
 - `AI_MAX_OUTPUT_CHARS`
 - `AI_RATE_LIMIT_WINDOW_MS`
 - `AI_RATE_LIMIT_MAX_REQUESTS`
+- `AI_RATE_LIMIT_MAX_ORGANIZATION_REQUESTS`
+- `AI_HEALTH_CACHE_TTL_MS`
+- `AI_HEALTH_TIMEOUT_MS`
 
-AI is optional at startup. Disabled mode is safe for development and returns `AI_PROVIDER_UNAVAILABLE` from Copilot requests.
+AI is optional at startup. Disabled mode is safe for development and returns `AI_DISABLED` from Copilot requests. Safe operational details are documented in `docs/ai-governance.md`.
 
 ## Permissions and Scope
 
@@ -99,13 +102,13 @@ Persistent conversation history is not implemented. No conversation schema exist
 
 ## Rate Limits and Timeouts
 
-The AI route uses an in-memory per-organization/user rate limiter. It protects local model resources and future provider cost without adding billing. Provider requests use `AI_REQUEST_TIMEOUT_MS` and map timeouts to `AI_PROVIDER_TIMEOUT`.
+The AI route uses the `AiRateLimitStore` abstraction with the active `MemoryAiRateLimitStore`. It enforces both per-user and per-organization windows, returns retry metadata through headers, and reports `distributed=false` in health/readiness metadata. Provider requests use `AI_REQUEST_TIMEOUT_MS` and map timeouts to `AI_PROVIDER_TIMEOUT`. Health checks are cached by `AiHealthService` to avoid provider probe storms.
 
 ## Logging and Audit Events
 
-Logs include request ID, organization ID, user ID, scope, provider, model, duration and source count. They do not log prompts, answers, tokens, credentials, storage keys or presigned URLs.
+Logs include request ID, organization ID, user ID, scope, provider, model, result category, duration category and source count. They do not log prompts, answers, credentials, storage keys, provider URLs or presigned URLs.
 
-Audit metadata includes request ID, scope, provider, model, duration, source count and success state. It excludes the full question, full prompt and full answer.
+Audit metadata includes request ID, scope, provider, model, result category, duration, duration category, source count, success state and provider token counts when available. It excludes the full question, full prompt, retrieved context and full answer.
 
 ## Known Limitations
 
@@ -117,3 +120,4 @@ Audit metadata includes request ID, scope, provider, model, duration, source cou
 - No autonomous tool use.
 - No AI-generated write actions.
 - In-memory rate limiting is suitable for the current monolith but should move to a shared store before horizontal API scaling.
+

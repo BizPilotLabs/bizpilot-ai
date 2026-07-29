@@ -36,25 +36,59 @@ export interface AiUsageMetadata {
   totalTokens?: number | undefined;
 }
 
+export type AiHealthStatus = "disabled" | "healthy" | "degraded" | "unavailable";
+export type AiLatencyCategory = "fast" | "normal" | "slow" | "timeout";
+
+export interface AiResponseMetadata {
+  requestId: string;
+  resultCategory: string;
+  durationCategory: AiLatencyCategory;
+  sourceCount: number;
+  rateLimit?: {
+    remaining: number;
+    resetAt: string;
+    retryAfterSeconds: number;
+  } | undefined;
+}
+
 export interface AiCopilotResponse {
   requestId: string;
   answer: string;
   sources: AiSourceReference[];
   provider: AiProviderMetadata;
   usage?: AiUsageMetadata | undefined;
+  metadata: AiResponseMetadata;
   scope: AiScopeInput;
   limitations: string[];
 }
 
 export interface AiHealthResponse {
+  enabled: boolean;
+  configured: boolean;
   available: boolean;
+  status: AiHealthStatus;
   provider: string;
   model: string;
+  checkedAt: string;
+  latencyCategory: AiLatencyCategory;
+  degradedReasonCode?: string | undefined;
   reason?: string | undefined;
+  rateLimit: {
+    store: "memory";
+    distributed: false;
+    windowMs: number;
+    userLimit: number;
+    organizationLimit: number;
+  };
+  persistence: {
+    promptsStored: false;
+    responsesStored: false;
+    conversationHistoryStored: false;
+  };
+  mode: "read_only";
 }
 
 export interface ApiSuccessResponse<TData> {
   success: true;
   data: TData;
 }
-

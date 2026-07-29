@@ -46,10 +46,39 @@ export interface AiProviderResponse {
   usage?: AiProviderUsage | undefined;
 }
 
+export type AiProviderHealthStatus = "disabled" | "healthy" | "degraded" | "unavailable";
+export type AiLatencyCategory = "fast" | "normal" | "slow" | "timeout";
+
+export interface AiProviderHealth {
+  enabled: boolean;
+  configured: boolean;
+  available: boolean;
+  status: AiProviderHealthStatus;
+  provider: string;
+  model: string;
+  checkedAt: string;
+  latencyCategory: AiLatencyCategory;
+  degradedReasonCode?: string | undefined;
+  reason?: string | undefined;
+  rateLimit: {
+    store: "memory";
+    distributed: false;
+    windowMs: number;
+    userLimit: number;
+    organizationLimit: number;
+  };
+  persistence: {
+    promptsStored: false;
+    responsesStored: false;
+    conversationHistoryStored: false;
+  };
+  mode: "read_only";
+}
+
 export interface AiProvider {
   readonly metadata: AiProviderMetadata;
   generate(input: AiProviderRequest): Promise<AiProviderResponse>;
-  health(): Promise<{ available: boolean; reason?: string }>;
+  health(): Promise<{ available: boolean; reason?: string | undefined }>;
 }
 
 export type AiSourceType = "organization" | "project" | "task" | "comment" | "attachment" | "activity" | "user" | "role";
@@ -63,12 +92,25 @@ export interface AiSourceReference {
   updatedAt?: string | undefined;
 }
 
+export interface AiResponseMetadata {
+  requestId: string;
+  resultCategory: string;
+  durationCategory: AiLatencyCategory;
+  sourceCount: number;
+  rateLimit?: {
+    remaining: number;
+    resetAt: string;
+    retryAfterSeconds: number;
+  } | undefined;
+}
+
 export interface AiCopilotResponse {
   requestId: string;
   answer: string;
   sources: AiSourceReference[];
   provider: AiProviderMetadata;
   usage?: AiProviderUsage | undefined;
+  metadata: AiResponseMetadata;
   scope: AiScopeInput;
   limitations: string[];
 }
@@ -142,9 +184,7 @@ export interface AiActivityContext {
 
 export interface AiUserContext {
   id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
+  displayName: string;
   status: string;
   roleNames: string[];
   createdAt: Date;
@@ -163,5 +203,3 @@ export interface AiContextBundle {
 }
 
 export type AiRequest = AuthenticatedRequest;
-
-

@@ -116,7 +116,7 @@ export class AiContextBuilder {
     }
 
     for (const user of users) {
-      sources.add({ type: "user", id: user.id, label: `${user.firstName} ${user.lastName}`.trim() || user.email, appRoute: "/app/users", updatedAt: user.createdAt.toISOString() });
+      sources.add({ type: "user", id: user.id, label: user.displayName, appRoute: "/app/users", updatedAt: user.createdAt.toISOString() });
     }
 
     if (projects.length >= aiLimits.projectsLimit) truncationNotes.push(`Projects limited to ${aiLimits.projectsLimit} records.`);
@@ -134,4 +134,5 @@ export class AiContextBuilder {
 export const aiContextBuilder = new AiContextBuilder();
 export const hasAiPermission = hasPermission;
 export const formatDate = iso;
+
 

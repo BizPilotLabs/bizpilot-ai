@@ -5,8 +5,8 @@ import { useForm } from "react-hook-form";
 import { Alert, Button, Card, CardContent, CardHeader, CardTitle, Input, Select, Skeleton, Textarea } from "@/components/ui";
 import { useAuthStore } from "@/store";
 import { aiQuestionSchema, type AiQuestionFormValues } from "../schemas";
-import { getAiErrorMessage, useAiHealth, useAskCopilot } from "../hooks";
-import { CopilotAnswer } from "../components/copilot-answer";
+import { getAiErrorCode, getAiErrorMessage, getAiRetryAfterSeconds, isAiRetryableError, useAiHealth, useAskCopilot } from "../hooks";
+import { AiStatusIndicator, CopilotAnswer } from "../components";
 import type { AiCopilotResponse, AiScopeType } from "../types";
 
 const suggestedQuestions = [
@@ -41,8 +41,12 @@ export function AiCopilotPage(): ReactElement {
   });
 
   const submitQuestion = async (values: AiQuestionFormValues): Promise<void> => {
-    const result = await askCopilot.mutateAsync(values);
-    setResponse(result);
+    try {
+      const result = await askCopilot.mutateAsync(values);
+      setResponse(result);
+    } catch {
+      return;
+    }
   };
 
   const applySuggestion = (question: string): void => {
@@ -60,6 +64,11 @@ export function AiCopilotPage(): ReactElement {
     return <Alert variant="danger" title="AI access unavailable">You do not have permission to use BizPilot AI Copilot.</Alert>;
   }
 
+  const healthUnavailable = healthQuery.data?.available === false;
+  const rateLimitedForSeconds = askCopilot.isError ? getAiRetryAfterSeconds(askCopilot.error) : undefined;
+  const retryable = askCopilot.isError && isAiRetryableError(askCopilot.error);
+  const errorCode = askCopilot.isError ? getAiErrorCode(askCopilot.error) : undefined;
+
   return (
     <div className="grid gap-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -72,7 +81,8 @@ export function AiCopilotPage(): ReactElement {
       </div>
 
       {healthQuery.isLoading ? <Skeleton className="h-16 rounded-2xl" /> : null}
-      {healthQuery.isSuccess && !healthQuery.data.available ? <Alert variant="warning" title="AI is unavailable">{healthQuery.data.reason ?? "AI provider configuration is required before Copilot can answer questions."}</Alert> : null}
+      {healthQuery.isSuccess ? <AiStatusIndicator health={healthQuery.data} /> : null}
+      {healthQuery.isSuccess && healthUnavailable ? <Alert variant="warning" title="Copilot is not ready">{healthQuery.data.reason ?? "AI is unavailable right now. The rest of BizPilot remains available."}</Alert> : null}
       {healthQuery.isError ? <Alert variant="warning" title="AI health unavailable">{getAiErrorMessage(healthQuery.error)}</Alert> : null}
 
       <Card className="border-primary/15 bg-surface/85 shadow-[0_18px_70px_hsl(var(--shadow-color)/0.12)]">
@@ -105,10 +115,17 @@ export function AiCopilotPage(): ReactElement {
             <div className="flex flex-wrap gap-2" aria-label="Suggested read-only questions">
               {suggestedQuestions.map((question) => <Button key={question} type="button" size="sm" variant="subtle" onClick={() => applySuggestion(question)}>{question}</Button>)}
             </div>
-            {askCopilot.isError ? <Alert variant="danger" title="Copilot could not answer">{getAiErrorMessage(askCopilot.error)}</Alert> : null}
+            {askCopilot.isError ? (
+              <Alert variant={errorCode === "AI_RATE_LIMIT_EXCEEDED" ? "warning" : "danger"} title="Copilot could not answer" role="alert">
+                <div className="grid gap-3">
+                  <p>{getAiErrorMessage(askCopilot.error)}</p>
+                  {retryable && rateLimitedForSeconds === undefined ? <Button type="button" size="sm" variant="neutral" className="w-fit" onClick={() => askCopilot.reset()}>Dismiss and retry</Button> : null}
+                </div>
+              </Alert>
+            ) : null}
             <div className="flex items-center justify-between gap-3">
               <p className="flex items-center gap-2 text-xs text-muted-foreground"><ShieldAlert aria-hidden="true" className="h-4 w-4" /> Retrieved workspace content is treated as untrusted data.</p>
-              <Button type="submit" isLoading={askCopilot.isPending} disabled={askCopilot.isPending || healthQuery.data?.available === false} leftIcon={<Send aria-hidden="true" className="h-4 w-4" />}>Ask Copilot</Button>
+              <Button type="submit" isLoading={askCopilot.isPending} disabled={askCopilot.isPending || healthUnavailable || rateLimitedForSeconds !== undefined} leftIcon={<Send aria-hidden="true" className="h-4 w-4" />}>Ask Copilot</Button>
             </div>
           </form>
         </CardContent>
@@ -119,4 +136,5 @@ export function AiCopilotPage(): ReactElement {
     </div>
   );
 }
+
 

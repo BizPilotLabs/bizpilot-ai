@@ -1,5 +1,6 @@
 import { env } from "../../config/index.js";
 import { AppError } from "../../core/errors/index.js";
+import { createAiError } from "./ai.failure.js";
 import type { AiProvider, AiProviderRequest, AiProviderResponse } from "./ai.types.js";
 
 interface OllamaGenerateResponse {
@@ -13,7 +14,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> => typeof va
 
 const parseOllamaResponse = (value: unknown): OllamaGenerateResponse => {
   if (!isRecord(value) || typeof value.response !== "string") {
-    throw new AppError({ statusCode: 502, message: "AI provider returned an invalid response.", code: "AI_PROVIDER_INVALID_RESPONSE" });
+    throw createAiError("AI_PROVIDER_INVALID_RESPONSE");
   }
 
   const parsed: OllamaGenerateResponse = { response: value.response };
@@ -27,11 +28,11 @@ export class DisabledAiProvider implements AiProvider {
   public readonly metadata = { provider: "disabled", model: "disabled" };
 
   public async generate(_input: AiProviderRequest): Promise<AiProviderResponse> {
-    throw new AppError({ statusCode: 503, message: "AI assistant is not configured.", code: "AI_PROVIDER_UNAVAILABLE" });
+    throw createAiError("AI_DISABLED");
   }
 
   public async health(): Promise<{ available: boolean; reason?: string }> {
-    return { available: false, reason: "AI provider is disabled." };
+    return { available: false, reason: "AI is disabled for this deployment." };
   }
 }
 
@@ -56,7 +57,7 @@ export class OllamaAiProvider implements AiProvider {
       });
 
       if (!response.ok) {
-        throw new AppError({ statusCode: 503, message: "AI provider is unavailable.", code: "AI_PROVIDER_UNAVAILABLE" });
+        throw createAiError("AI_PROVIDER_UNAVAILABLE");
       }
 
       const result = parseOllamaResponse(await response.json());
@@ -71,24 +72,24 @@ export class OllamaAiProvider implements AiProvider {
       };
     } catch (error) {
       if (error instanceof AppError) throw error;
-      if (error instanceof Error && error.name === "AbortError") {
-        throw new AppError({ statusCode: 504, message: "AI provider request timed out.", code: "AI_PROVIDER_TIMEOUT" });
-      }
-      throw new AppError({ statusCode: 503, message: "AI provider is unavailable.", code: "AI_PROVIDER_UNAVAILABLE" });
+      if (error instanceof Error && error.name === "AbortError") throw createAiError("AI_PROVIDER_TIMEOUT", error);
+      throw createAiError("AI_PROVIDER_UNAVAILABLE", error);
     } finally {
       clearTimeout(timeout);
     }
   }
 
   public async health(): Promise<{ available: boolean; reason?: string }> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), Math.min(env.AI_HEALTH_TIMEOUT_MS, env.AI_REQUEST_TIMEOUT_MS));
+
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), Math.min(env.AI_REQUEST_TIMEOUT_MS, 3000));
       const response = await fetch(new URL("/api/tags", env.AI_OLLAMA_BASE_URL), { signal: controller.signal });
-      clearTimeout(timeout);
-      return response.ok ? { available: true } : { available: false, reason: "Ollama returned an unhealthy response." };
+      return response.ok ? { available: true } : { available: false, reason: "AI provider returned an unhealthy response." };
     } catch {
-      return { available: false, reason: "Ollama is unreachable." };
+      return { available: false, reason: "AI provider is unreachable or timed out." };
+    } finally {
+      clearTimeout(timeout);
     }
   }
 }

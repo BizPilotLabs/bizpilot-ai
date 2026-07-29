@@ -70,7 +70,7 @@ export const buildAiPrompt = (input: { question: string; context: AiContextBundl
   lines.push("", "USER DATA");
   if (context.users.length === 0) lines.push("No authorized user records were supplied.");
   for (const user of context.users) {
-    lines.push(`${sourceMarker(context.sources, "user", user.id)} name=${escapeContext(`${user.firstName} ${user.lastName}`.trim())} email=${escapeContext(user.email)} status=${user.status} roles=${escapeContext(user.roleNames.join(", "))}`);
+    lines.push(`${sourceMarker(context.sources, "user", user.id)} name=${escapeContext(user.displayName)} status=${user.status} roles=${escapeContext(user.roleNames.join(", "))}`);
   }
 
   if (context.truncationNotes.length > 0) {
@@ -86,3 +86,4 @@ export const buildAiPrompt = (input: { question: string; context: AiContextBundl
 
   return trimToConfiguredLimit(lines.join("\n"));
 };
+
