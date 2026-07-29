@@ -1,5 +1,6 @@
 import {
   Activity,
+  Bot,
   Building2,
   FolderKanban,
   LayoutDashboard,
@@ -28,6 +29,7 @@ export const appNavigation: NavigationItem[] = [
   { label: "Roles", href: "/app/roles", icon: ShieldCheck, permission: "roles.read" },
   { label: "Organizations", href: "/app/organizations", icon: Building2 },
   { label: "Activity", href: "/app/activity", icon: Activity, permission: "activities.read" },
+  { label: "AI Copilot", href: "/app/ai", icon: Bot, permission: "ai.use" },
   { label: "Settings", href: "/app/settings", icon: Settings }
 ];
 
@@ -49,4 +51,3 @@ export const findNavigationItem = (pathname: string, items: NavigationItem[] = a
 
   return visit(items);
 };
-

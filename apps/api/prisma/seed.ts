@@ -130,6 +130,12 @@ const permissions = [
     description: "Delete task attachments within an organization.",
   },
   {
+    key: "ai.use",
+    name: "Use AI",
+    resource: "ai",
+    action: "use",
+    description: "Use the read-only BizPilot AI assistant.",
+  },  {
     key: "activities.read",
     name: "Read activities",
     resource: "activities",

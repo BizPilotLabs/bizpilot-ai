@@ -1,6 +1,7 @@
 import { Router, type Router as ExpressRouter } from "express";
 
 import { activityRoutes } from "./modules/activities/index.js";
+import { aiRoutes } from "./modules/ai/index.js";
 import { attachmentRoutes } from "./modules/attachments/index.js";
 import { authRoutes } from "./modules/auth/index.js";
 import { commentRoutes } from "./modules/comments/index.js";
@@ -21,6 +22,7 @@ routes.get("/health", (_request, response) => {
 });
 
 routes.use("/auth", authRoutes);
+routes.use("/ai", aiRoutes);
 routes.use("/activities", activityRoutes);
 routes.use("/", commentRoutes);
 routes.use("/", attachmentRoutes);
@@ -32,3 +34,4 @@ routes.use("/tasks", taskRoutes);
 routes.use("/teams", teamRoutes);
 routes.use("/users", userRoleRoutes);
 routes.use("/users", userRoutes);
+

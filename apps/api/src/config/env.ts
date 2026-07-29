@@ -26,7 +26,20 @@ const environmentSchema = z.object({
   R2_ENDPOINT: z.string().url().optional(),
   R2_PRESIGNED_UPLOAD_EXPIRES_SECONDS: z.coerce.number().int().positive().max(3600).default(600),
   R2_PRESIGNED_DOWNLOAD_EXPIRES_SECONDS: z.coerce.number().int().positive().max(3600).default(300),
+  AI_ENABLED: z.coerce.boolean().default(false),
+  AI_PROVIDER: z.enum(["disabled", "ollama"]).default("disabled"),
+  AI_MODEL: z.string().min(1).default("llama3.2"),
+  AI_OLLAMA_BASE_URL: z.string().url().default("http://localhost:11434"),
+  AI_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().max(120_000).default(30_000),
+  AI_MAX_CONTEXT_CHARS: z.coerce.number().int().positive().max(60_000).default(16_000),
+  AI_MAX_OUTPUT_CHARS: z.coerce.number().int().positive().max(12_000).default(6_000),
+  AI_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
+  AI_RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().default(20),
 }).superRefine((value, context) => {
+  if (value.AI_ENABLED && value.AI_PROVIDER === "disabled") {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["AI_PROVIDER"], message: "AI_PROVIDER must not be disabled when AI_ENABLED is true." });
+  }
+
   if (value.STORAGE_PROVIDER !== "r2") {
     return;
   }
@@ -56,3 +69,4 @@ const parseEnvironment = (): Environment => {
 };
 
 export const env = parseEnvironment();
+

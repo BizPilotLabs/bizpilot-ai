@@ -3,6 +3,7 @@ import { AppShell } from "@/app/app-shell";
 import { AppLayout } from "@/components/layout";
 import { LoginPage, RegisterOrganizationPage, ForgotPasswordPage, ResetPasswordPage } from "@/features/auth";
 import { ActivityPage } from "@/features/activity";
+import { AiCopilotPage } from "@/features/ai";
 import { DashboardPage } from "@/features/dashboard";
 import { OrganizationPage } from "@/features/organizations";
 import { ProjectDetailsPage, ProjectsPage } from "@/features/projects";
@@ -54,6 +55,7 @@ export const appRouter = createBrowserRouter([
                   { path: "roles", element: <RolesPage /> },
                   { path: "organizations", element: <OrganizationPage /> },
                   { path: "activity", element: <ActivityPage /> },
+                  { path: "ai", element: <AiCopilotPage /> },
                   { path: "settings", element: <AppPlaceholderRoute title="Settings" /> }
                 ]
               }
@@ -67,6 +69,7 @@ export const appRouter = createBrowserRouter([
 ]);
 
 export { routePaths } from "./route-paths";
+
 
 
 

@@ -8,6 +8,7 @@ export const routePaths = {
   users: "/app/users",
   organizations: "/app/organizations",
   activity: "/app/activity",
+  ai: "/app/ai",
   settings: "/app/settings",
   auth: "/auth",
   login: "/auth/login",
@@ -16,4 +17,5 @@ export const routePaths = {
   resetPassword: "/auth/reset-password",
   notFound: "*"
 } as const;
+
 

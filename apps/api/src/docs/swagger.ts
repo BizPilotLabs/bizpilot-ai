@@ -105,13 +105,18 @@ const schemas = {
   TeamMemberRequest: entity({ userId: uuid }),
   CommentRequest: entity({ content: { type: "string", minLength: 1, maxLength: 5000 } }),
   AttachmentUploadRequest: entity({ originalName: { type: "string" }, mimeType: { type: "string" }, fileSize: { type: "integer", maximum: 26214400 } }),
+  AiScope: entity({ type: { type: "string", enum: ["organization", "project", "task"] }, entityId: { type: "string", format: "uuid" } }),
+  AiCopilotRequest: entity({ question: { type: "string", minLength: 1, maxLength: 1000 }, scope: { $ref: "#/components/schemas/AiScope" }, history: { type: "array", maxItems: 6, items: entity({ role: { type: "string", enum: ["user", "assistant"] }, content: { type: "string", maxLength: 1200 } }) } }),
+  AiSourceReference: entity({ marker: { type: "string" }, type: { type: "string", enum: ["organization", "project", "task", "comment", "attachment", "activity", "user", "role"] }, id: { type: "string" }, label: { type: "string" }, appRoute: { type: "string" }, updatedAt: dateTime }),
+  AiCopilotResponse: entity({ requestId: { type: "string" }, answer: { type: "string" }, sources: { type: "array", items: { $ref: "#/components/schemas/AiSourceReference" } }, provider: entity({ provider: { type: "string" }, model: { type: "string" } }), usage: entity({ inputTokens: { type: "integer" }, outputTokens: { type: "integer" }, totalTokens: { type: "integer" } }), scope: { $ref: "#/components/schemas/AiScope" }, limitations: { type: "array", items: { type: "string" } } }),
+  AiHealth: entity({ available: { type: "boolean" }, provider: { type: "string" }, model: { type: "string" }, reason: { type: "string" } }),
 };
 
 const openApiDefinition = {
   openapi: "3.1.0",
   info: { title: "BizPilot AI API", version: "0.1.0", description: "OpenAPI documentation for the BizPilot AI backend." },
   servers: [{ url: "http://localhost:4000", description: "Local development" }],
-  tags: ["Health", "Authentication", "Organizations", "Users", "RBAC", "Projects", "Tasks", "Teams", "Comments", "Attachments", "Activities"].map((name) => ({ name })),
+  tags: ["Health", "Authentication", "Organizations", "Users", "RBAC", "Projects", "Tasks", "Teams", "Comments", "Attachments", "Activities", "AI"].map((name) => ({ name })),
   components: {
     securitySchemes: { bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" } },
     responses: {
@@ -124,7 +129,8 @@ const openApiDefinition = {
     schemas,
   },
   paths: {
-    "/health": { get: { tags: ["Health"], summary: "Health check", responses: { 200: { description: "API is healthy", ...content(entity({ success: { type: "boolean", const: true }, status: { type: "string", const: "ok" } })) } } } },
+    "/ai/copilot/health": { get: securedGet("AI", "AI provider health", ok({ $ref: "#/components/schemas/AiHealth" })) },
+    "/ai/copilot/query": { post: { tags: ["AI"], summary: "Ask the read-only Business Copilot", security, requestBody: body("#/components/schemas/AiCopilotRequest"), responses: { 200: ok({ $ref: "#/components/schemas/AiCopilotResponse" }), 400: errors[400], 401: errors[401], 403: errors[403], 404: errors[404], 429: { description: "AI rate limit exceeded", ...content({ $ref: "#/components/schemas/ErrorResponse" }) }, 503: { description: "AI provider unavailable", ...content({ $ref: "#/components/schemas/ErrorResponse" }) }, 504: { description: "AI provider timeout", ...content({ $ref: "#/components/schemas/ErrorResponse" }) } } } },    "/health": { get: { tags: ["Health"], summary: "Health check", responses: { 200: { description: "API is healthy", ...content(entity({ success: { type: "boolean", const: true }, status: { type: "string", const: "ok" } })) } } } },
     "/auth/register": { post: { tags: ["Authentication"], summary: "Register organization owner", requestBody: body("#/components/schemas/RegisterRequest"), responses: { 201: ok({ $ref: "#/components/schemas/AuthResult" }), ...errors } } },
     "/auth/login": { post: { tags: ["Authentication"], summary: "Login", requestBody: body("#/components/schemas/LoginRequest"), responses: { 200: ok({ $ref: "#/components/schemas/AuthResult" }), ...errors } } },
     "/auth/logout": { post: { tags: ["Authentication"], summary: "Logout", security, responses: { 200: ok(entity({ loggedOut: { type: "boolean" } })), ...errors } } },
@@ -170,6 +176,7 @@ export const openApiSpec = swaggerJSDoc(swaggerOptions) as Schema;
 export const setupSwaggerDocs = (app: Express): void => {
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiSpec, { explorer: true, customSiteTitle: "BizPilot AI API Docs" }));
 };
+
 
 
 
