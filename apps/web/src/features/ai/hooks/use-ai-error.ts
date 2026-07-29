@@ -11,6 +11,7 @@ const messagesByCode: Record<string, string> = {
   AI_SCOPE_NOT_FOUND: "That project or task is unavailable, deleted, or outside your organization.",
   AI_CONTEXT_PERMISSION_DENIED: "You do not have permission to use that Copilot context.",
   AI_RATE_LIMIT_EXCEEDED: "Copilot is receiving too many requests. Please wait before trying again.",
+  AI_RATE_LIMIT_STORE_UNAVAILABLE: "AI governance service is temporarily unavailable. Please try again in a moment.",
   AI_REQUEST_VALIDATION_FAILED: "Please check your question and scope, then try again.",
   AI_READ_ONLY_REFUSED: "Copilot can answer questions, but it cannot perform actions.",
   AI_INTERNAL_CONTEXT_FAILURE: "Copilot could not prepare a safe answer right now.",
@@ -44,7 +45,7 @@ export const getAiRetryAfterSeconds = (error: unknown): number | undefined => {
 
 export const isAiRetryableError = (error: unknown): boolean => {
   const code = getAiErrorCode(error);
-  return code === "AI_PROVIDER_UNAVAILABLE" || code === "AI_PROVIDER_TIMEOUT" || code === "AI_CONTEXT_UNAVAILABLE" || code === "AI_RATE_LIMIT_EXCEEDED" || code === "AI_PROVIDER_INVALID_RESPONSE";
+  return code === "AI_PROVIDER_UNAVAILABLE" || code === "AI_PROVIDER_TIMEOUT" || code === "AI_CONTEXT_UNAVAILABLE" || code === "AI_RATE_LIMIT_EXCEEDED" || code === "AI_RATE_LIMIT_STORE_UNAVAILABLE" || code === "AI_PROVIDER_INVALID_RESPONSE";
 };
 
 export const getAiErrorMessage = (error: unknown): string => {
@@ -61,4 +62,5 @@ export const getAiErrorMessage = (error: unknown): string => {
   if (error instanceof Error && error.message.length > 0) return error.message;
   return fallbackMessage;
 };
+
 

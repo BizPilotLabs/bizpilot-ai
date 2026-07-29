@@ -102,7 +102,7 @@ Persistent conversation history is not implemented. No conversation schema exist
 
 ## Rate Limits and Timeouts
 
-The AI route uses the `AiRateLimitStore` abstraction with the active `MemoryAiRateLimitStore`. It enforces both per-user and per-organization windows, returns retry metadata through headers, and reports `distributed=false` in health/readiness metadata. Provider requests use `AI_REQUEST_TIMEOUT_MS` and map timeouts to `AI_PROVIDER_TIMEOUT`. Health checks are cached by `AiHealthService` to avoid provider probe storms.
+The AI route uses the `AiRateLimitStore` abstraction with `AI_RATE_LIMIT_STORE=memory` by default and optional `AI_RATE_LIMIT_STORE=redis` for horizontally shared enforcement. Both stores enforce per-user and per-organization windows, return retry metadata through headers, and report store/readiness metadata through AI health. Redis mode is fail-closed and documented in `docs/redis-ai-rate-limiting.md`. Provider requests use `AI_REQUEST_TIMEOUT_MS` and map timeouts to `AI_PROVIDER_TIMEOUT`. Health checks are cached by `AiHealthService` to avoid provider probe storms.
 
 ## Logging and Audit Events
 
@@ -119,5 +119,5 @@ Audit metadata includes request ID, scope, provider, model, result category, dur
 - No cloud provider implementation.
 - No autonomous tool use.
 - No AI-generated write actions.
-- In-memory rate limiting is suitable for the current monolith but should move to a shared store before horizontal API scaling.
+- Memory rate limiting remains process-local. Use `AI_RATE_LIMIT_STORE=redis` with `REDIS_URL` before horizontal API scaling.
 

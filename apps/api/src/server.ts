@@ -4,6 +4,7 @@ import { createApp } from "./app.js";
 import { config } from "./config/index.js";
 import { connectDatabase, disconnectDatabase } from "./core/database/index.js";
 import { logger } from "./core/logger/index.js";
+import { connectRedis, disconnectRedis } from "./core/redis/index.js";
 
 const app = createApp();
 const server = http.createServer(app);
@@ -31,6 +32,7 @@ const shutdown = (signal: NodeJS.Signals): void => {
           process.exitCode = 1;
         }
 
+        await disconnectRedis();
         await disconnectDatabase();
         logger.info("Application shutdown completed");
       } catch (error) {
@@ -47,6 +49,7 @@ const shutdown = (signal: NodeJS.Signals): void => {
 const bootstrap = async (): Promise<void> => {
   try {
     await connectDatabase();
+    await connectRedis();
 
     server.listen(config.port, config.host, () => {
       logger.info(
@@ -56,6 +59,7 @@ const bootstrap = async (): Promise<void> => {
     });
   } catch (error) {
     logger.fatal({ err: error }, "Application startup failed");
+    await disconnectRedis();
     await disconnectDatabase();
     process.exit(1);
   }

@@ -61,11 +61,13 @@ export interface AiProviderHealth {
   degradedReasonCode?: string | undefined;
   reason?: string | undefined;
   rateLimit: {
-    store: "memory";
-    distributed: false;
+    store: "memory" | "redis";
+    distributed: boolean;
     windowMs: number;
     userLimit: number;
     organizationLimit: number;
+    available: boolean;
+    detail: string;
   };
   persistence: {
     promptsStored: false;
@@ -203,3 +205,4 @@ export interface AiContextBundle {
 }
 
 export type AiRequest = AuthenticatedRequest;
+

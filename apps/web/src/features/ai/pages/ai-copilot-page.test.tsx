@@ -17,7 +17,7 @@ const healthResponse = (overrides: Partial<AiHealthResponse> = {}): AiHealthResp
   model: "fake-model",
   checkedAt: "2026-01-01T00:00:00.000Z",
   latencyCategory: "fast",
-  rateLimit: { store: "memory", distributed: false, windowMs: 60000, userLimit: 20, organizationLimit: 200 },
+  rateLimit: { store: "memory", distributed: false, windowMs: 60000, userLimit: 20, organizationLimit: 200, available: true, detail: "In-memory AI rate limits are active." },
   persistence: { promptsStored: false, responsesStored: false, conversationHistoryStored: false },
   mode: "read_only",
   ...overrides
@@ -137,6 +137,18 @@ describe("AiCopilotPage", () => {
     expect(screen.getByRole("button", { name: "Ask Copilot" })).toBeDisabled();
   });
 
+  it("preserves the question when distributed governance is unavailable", async () => {
+    server.use(http.post(`${env.apiBaseUrl}/ai/copilot/query`, () => HttpResponse.json({ success: false, error: { code: "AI_RATE_LIMIT_STORE_UNAVAILABLE", message: "AI governance service is temporarily unavailable." } }, { status: 503 })));
+    const user = userEvent.setup();
+    renderWithProviders(<AiCopilotPage />, { permissions: ["ai.use"], roleNames: ["Member"] });
+
+    await user.type(await screen.findByLabelText("Ask Copilot"), "Summarize progress");
+    await user.click(screen.getByRole("button", { name: "Ask Copilot" }));
+
+    expect(await screen.findByText("AI governance service is temporarily unavailable. Please try again in a moment.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Ask Copilot")).toHaveValue("Summarize progress");
+    expect(screen.queryByText(/redis:\/\//iu)).not.toBeInTheDocument();
+  });
   it("renders model HTML-like output as text", async () => {
     server.use(http.post(`${env.apiBaseUrl}/ai/copilot/query`, () => HttpResponse.json({ success: true, data: { requestId: "request-3", answer: "<img src=x onerror=alert(1)> Safe text", sources: [], provider: { provider: "test", model: "fake-model" }, metadata: responseMetadata, scope: { type: "organization" }, limitations: [] } })));
     const user = userEvent.setup();
@@ -150,3 +162,4 @@ describe("AiCopilotPage", () => {
     expect(within(answer).queryByRole("img")).not.toBeInTheDocument();
   });
 });
+

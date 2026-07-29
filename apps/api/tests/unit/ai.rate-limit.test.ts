@@ -27,9 +27,11 @@ describe("MemoryAiRateLimitStore", () => {
     await expect(store.consume({ organizationId: "org-a", userId: "user-a", now: 1101 })).resolves.toMatchObject({ allowed: true });
   });
 
-  it("reports process-local readiness honestly", () => {
+  it("reports process-local readiness honestly", async () => {
     const store = new MemoryAiRateLimitStore({ windowMs: 100, userLimit: 1, organizationLimit: 1 });
 
-    expect(store.readiness()).toEqual(expect.objectContaining({ ready: true, store: "memory", distributed: false }));
+    await expect(store.readiness()).resolves.toEqual(expect.objectContaining({ ready: true, store: "memory", distributed: false }));
   });
 });
+
+

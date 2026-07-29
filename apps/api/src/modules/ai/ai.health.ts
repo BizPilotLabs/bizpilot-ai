@@ -2,7 +2,7 @@ import { performance } from "node:perf_hooks";
 import { env } from "../../config/index.js";
 import { durationCategory } from "./ai.failure.js";
 import { aiProvider } from "./ai.provider.js";
-import { getAiRateLimitPolicy, aiRateLimitStore } from "./ai.rate-limit.js";
+import { aiRateLimitStore, getAiRateLimitPolicy } from "./ai.rate-limit.js";
 import type { AiProviderHealth, AiProviderHealthStatus } from "./ai.types.js";
 
 interface CachedHealth {
@@ -10,26 +10,11 @@ interface CachedHealth {
   expiresAt: number;
 }
 
-const timeoutHealth = (startedAt: number): AiProviderHealth => ({
-  enabled: env.AI_ENABLED,
-  configured: env.AI_ENABLED && env.AI_PROVIDER !== "disabled",
-  available: false,
-  status: "degraded",
-  provider: aiProvider.metadata.provider,
-  model: aiProvider.metadata.model,
-  checkedAt: new Date().toISOString(),
-  latencyCategory: durationCategory(performance.now() - startedAt),
-  degradedReasonCode: "AI_PROVIDER_TIMEOUT",
-  rateLimit: {
-    store: aiRateLimitStore.readiness().store,
-    distributed: aiRateLimitStore.readiness().distributed,
-    windowMs: getAiRateLimitPolicy().windowMs,
-    userLimit: getAiRateLimitPolicy().userLimit,
-    organizationLimit: getAiRateLimitPolicy().organizationLimit
-  },
-  persistence: { promptsStored: false, responsesStored: false, conversationHistoryStored: false },
-  mode: "read_only"
-});
+const statusFromProvider = (health: Awaited<ReturnType<typeof aiProvider.health>>): AiProviderHealthStatus => {
+  if (aiProvider.metadata.provider === "disabled") return "disabled";
+  if (health.available) return "healthy";
+  return "unavailable";
+};
 
 const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, fallback: T): Promise<T> => {
   let timeout: NodeJS.Timeout | undefined;
@@ -43,12 +28,6 @@ const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, fallback: 
   } finally {
     if (timeout !== undefined) clearTimeout(timeout);
   }
-};
-
-const statusFromProvider = (health: Awaited<ReturnType<typeof aiProvider.health>>): AiProviderHealthStatus => {
-  if (aiProvider.metadata.provider === "disabled") return "disabled";
-  if (health.available) return "healthy";
-  return "unavailable";
 };
 
 export class AiHealthService {
@@ -77,25 +56,24 @@ export class AiHealthService {
 
   private async probe(): Promise<AiProviderHealth> {
     const startedAt = performance.now();
-    const readiness = aiRateLimitStore.readiness();
+    const readiness = await aiRateLimitStore.readiness();
     const policy = getAiRateLimitPolicy();
-    const fallback = timeoutHealth(startedAt);
-    const providerHealth = await withTimeout(aiProvider.health(), env.AI_HEALTH_TIMEOUT_MS, fallback);
-
-
-    const status = statusFromProvider(providerHealth);
-    const latencyCategory = durationCategory(performance.now() - startedAt);
-    const degradedReasonCode = status === "disabled" ? "AI_DISABLED" : providerHealth.available ? undefined : "AI_PROVIDER_UNAVAILABLE";
+    const providerTimeoutFallback = { available: false, reason: "AI provider health check timed out." };
+    const providerHealth = await withTimeout(aiProvider.health(), env.AI_HEALTH_TIMEOUT_MS, providerTimeoutFallback);
+    const providerStatus = statusFromProvider(providerHealth);
+    const rateLimitReady = readiness.ready;
+    const status: AiProviderHealthStatus = rateLimitReady ? providerStatus : "degraded";
+    const degradedReasonCode = !rateLimitReady ? "AI_RATE_LIMIT_STORE_UNAVAILABLE" : providerStatus === "disabled" ? "AI_DISABLED" : providerHealth.available ? undefined : "AI_PROVIDER_UNAVAILABLE";
 
     return {
       enabled: env.AI_ENABLED,
       configured: env.AI_ENABLED && aiProvider.metadata.provider !== "disabled",
-      available: providerHealth.available,
+      available: providerHealth.available && rateLimitReady,
       status,
       provider: aiProvider.metadata.provider,
       model: aiProvider.metadata.model,
       checkedAt: new Date().toISOString(),
-      latencyCategory,
+      latencyCategory: durationCategory(performance.now() - startedAt),
       ...(degradedReasonCode === undefined ? {} : { degradedReasonCode }),
       ...(providerHealth.reason === undefined ? {} : { reason: providerHealth.reason }),
       rateLimit: {
@@ -103,7 +81,9 @@ export class AiHealthService {
         distributed: readiness.distributed,
         windowMs: policy.windowMs,
         userLimit: policy.userLimit,
-        organizationLimit: policy.organizationLimit
+        organizationLimit: policy.organizationLimit,
+        available: readiness.ready,
+        detail: readiness.detail
       },
       persistence: { promptsStored: false, responsesStored: false, conversationHistoryStored: false },
       mode: "read_only"
@@ -113,5 +93,3 @@ export class AiHealthService {
 
 export const aiHealthService = new AiHealthService();
 export const resetAiHealthForTests = (): void => aiHealthService.reset();
-
-

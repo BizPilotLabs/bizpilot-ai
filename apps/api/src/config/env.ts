@@ -3,6 +3,14 @@ import { z } from "zod";
 
 dotenv.config();
 
+const booleanSchema = z.preprocess((value) => {
+  if (typeof value !== "string") return value;
+  const normalized = value.trim().toLowerCase();
+  if (["true", "1", "yes", "on"].includes(normalized)) return true;
+  if (["false", "0", "no", "off", ""].includes(normalized)) return false;
+  return value;
+}, z.boolean());
+
 const environmentSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().positive().max(65535).default(4000),
@@ -26,19 +34,36 @@ const environmentSchema = z.object({
   R2_ENDPOINT: z.string().url().optional(),
   R2_PRESIGNED_UPLOAD_EXPIRES_SECONDS: z.coerce.number().int().positive().max(3600).default(600),
   R2_PRESIGNED_DOWNLOAD_EXPIRES_SECONDS: z.coerce.number().int().positive().max(3600).default(300),
-  AI_ENABLED: z.coerce.boolean().default(false),
+  REDIS_ENABLED: booleanSchema.default(false),
+  REDIS_URL: z.string().url().optional(),
+  REDIS_CONNECT_TIMEOUT_MS: z.coerce.number().int().positive().max(30_000).default(5_000),
+  REDIS_COMMAND_TIMEOUT_MS: z.coerce.number().int().positive().max(10_000).default(1_000),
+  REDIS_HEALTH_CACHE_TTL_MS: z.coerce.number().int().positive().max(300_000).default(30_000),
+  REDIS_MAX_RECONNECT_ATTEMPTS: z.coerce.number().int().min(0).max(20).default(3),
+  REDIS_KEY_PREFIX: z.string().trim().min(1).max(48).regex(/^[a-zA-Z0-9:_-]+$/u).default("bizpilot"),
+  REDIS_REQUIRED_IN_PRODUCTION: booleanSchema.default(false),
+  AI_ENABLED: booleanSchema.default(false),
   AI_PROVIDER: z.enum(["disabled", "ollama"]).default("disabled"),
   AI_MODEL: z.string().min(1).default("llama3.2"),
   AI_OLLAMA_BASE_URL: z.string().url().default("http://localhost:11434"),
   AI_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().max(120_000).default(30_000),
   AI_MAX_CONTEXT_CHARS: z.coerce.number().int().positive().max(60_000).default(16_000),
   AI_MAX_OUTPUT_CHARS: z.coerce.number().int().positive().max(12_000).default(6_000),
+  AI_RATE_LIMIT_STORE: z.enum(["memory", "redis"]).default("memory"),
   AI_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
   AI_RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().default(20),
   AI_RATE_LIMIT_MAX_ORGANIZATION_REQUESTS: z.coerce.number().int().positive().default(200),
   AI_HEALTH_CACHE_TTL_MS: z.coerce.number().int().positive().max(300_000).default(60_000),
   AI_HEALTH_TIMEOUT_MS: z.coerce.number().int().positive().max(30_000).default(3_000),
 }).superRefine((value, context) => {
+  if (value.AI_RATE_LIMIT_STORE === "redis" && (value.REDIS_URL === undefined || value.REDIS_URL.trim().length === 0)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["REDIS_URL"], message: "REDIS_URL is required when AI_RATE_LIMIT_STORE is redis." });
+  }
+
+  if (value.REDIS_REQUIRED_IN_PRODUCTION && value.NODE_ENV === "production" && (value.REDIS_URL === undefined || value.REDIS_URL.trim().length === 0)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["REDIS_URL"], message: "REDIS_URL is required when REDIS_REQUIRED_IN_PRODUCTION is true in production." });
+  }
+
   if (value.AI_ENABLED && value.AI_PROVIDER === "disabled") {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["AI_PROVIDER"], message: "AI_PROVIDER must not be disabled when AI_ENABLED is true." });
   }
@@ -72,6 +97,8 @@ const parseEnvironment = (): Environment => {
 };
 
 export const env = parseEnvironment();
+
+
 
 
 

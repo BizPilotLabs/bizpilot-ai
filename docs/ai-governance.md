@@ -4,7 +4,7 @@ BizPilot AI Copilot remains request-scoped and read-only. This milestone adds op
 
 ## Repository Inspection Summary
 
-No Redis, shared key-value store, distributed lock service, BullMQ queue, OpenTelemetry pipeline, Prometheus exporter, health registry, feature flag framework, organization AI settings schema, or platform-superadmin architecture exists in the current repository. The active implementation therefore uses provider-abstracted in-memory governance controls and documents the horizontal-scaling gap instead of adding speculative infrastructure.
+Redis infrastructure now exists only for distributed AI rate limiting. There is still no distributed lock service, BullMQ queue, OpenTelemetry pipeline, Prometheus exporter, feature flag framework, organization AI settings schema, or platform-superadmin architecture.
 
 Existing supporting infrastructure used by this milestone:
 
@@ -20,7 +20,7 @@ Existing supporting infrastructure used by this milestone:
 | --- | --- | --- |
 | Per-user AI rate limit | Fully supported | `MemoryAiRateLimitStore` enforces user windows. |
 | Per-organization AI rate limit | Fully supported | Same store enforces tenant-wide windows. |
-| Shared/distributed rate limits | Requires infrastructure | Adapter contract exists; no shared store is present. |
+| Shared/distributed rate limits | Fully supported when configured | `AI_RATE_LIMIT_STORE=redis` uses Redis-backed atomic limits. |
 | Daily usage counts | Backend-only partial | Safe request metadata is written to audit logs; no aggregate table. |
 | Provider health | Fully supported | Cached safe health model via `AiHealthService`. |
 | Provider latency | Partially supported | Duration categories are recorded, not raw metrics streams. |
@@ -42,7 +42,7 @@ Existing supporting infrastructure used by this milestone:
 
 ## Rate-Limit Abstraction
 
-`AiRateLimitStore` defines the adapter contract. The active implementation is `MemoryAiRateLimitStore`.
+`AiRateLimitStore` defines the adapter contract. The active implementation is selected by `AI_RATE_LIMIT_STORE`: `MemoryAiRateLimitStore` or `RedisAiRateLimitStore`.
 
 The store supports:
 
@@ -277,4 +277,5 @@ Frontend coverage includes:
 
 ## Recommended Next Milestone
 
-Add a shared infrastructure layer for cache/rate-limit adapters, then implement a Redis-backed `AiRateLimitStore` with atomic increments and production readiness checks. After that, add a small admin-safe AI status panel in the existing settings area once the settings architecture is finalized.
+Add production metrics and alerting for AI provider errors, Redis governance failures and rate-limit pressure. After that, add a small admin-safe AI status panel once the settings architecture is finalized.
+

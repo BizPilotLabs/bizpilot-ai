@@ -32,6 +32,8 @@ vi.mock("../../src/modules/ai/ai.repository.js", () => ({ aiRepository: aiReposi
 
 const { createApp } = await import("../../src/app.js");
 const { resetAiRateLimitForTests } = await import("../../src/modules/ai/ai.middleware.js");
+const { RedisOperationError } = await import("../../src/core/redis/index.js");
+const { setAiRateLimitStoreForTests } = await import("../../src/modules/ai/ai.rate-limit.js");
 const { resetAiHealthForTests } = await import("../../src/modules/ai/ai.health.js");
 
 const projectId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -227,6 +229,35 @@ describe("AI Copilot routes", () => {
     expect(providerInput?.prompt).not.toContain("email=");
     expect(providerInput?.prompt).not.toContain("maya@example.com");
   });
-});
+  it("allows AI queries through a Redis-backed limiter and returns distributed metadata", async () => {
+    setAiRateLimitStoreForTests({
+      consume: vi.fn().mockResolvedValue({ allowed: true, dimension: "user", limit: 20, remaining: 19, resetAt: new Date("2026-01-01T00:01:00.000Z"), retryAfterSeconds: 0, store: "redis", distributed: true }),
+      readiness: vi.fn().mockResolvedValue({ ready: true, store: "redis", distributed: true, detail: "Redis-backed AI rate limiting is available." }),
+      reset: vi.fn()
+    });
 
+    const response = await request(createApp()).post("/ai/copilot/query").set("Authorization", "Bearer valid-token").send({ question: "Summarize progress", scope: { type: "organization" } });
+
+    expect(response.status).toBe(200);
+    expect(response.headers["x-ai-ratelimit-store"]).toBe("redis");
+    expect(response.headers["x-ai-ratelimit-distributed"]).toBe("true");
+    expect(aiProviderMock.generate).toHaveBeenCalledTimes(1);
+  });
+
+  it("fails closed when the Redis-backed limiter is unavailable", async () => {
+    setAiRateLimitStoreForTests({
+      consume: vi.fn().mockRejectedValue(new RedisOperationError("command_failed")),
+      readiness: vi.fn().mockResolvedValue({ ready: false, store: "redis", distributed: true, detail: "Redis-backed AI rate limiting is unavailable.", failureCategory: "command_failed" }),
+      reset: vi.fn()
+    });
+
+    const response = await request(createApp()).post("/ai/copilot/query").set("Authorization", "Bearer valid-token").send({ question: "Summarize progress", scope: { type: "organization" } });
+
+    expect(response.status).toBe(503);
+    expect(response.body).toMatchObject({ success: false, error: { code: "AI_RATE_LIMIT_STORE_UNAVAILABLE" } });
+    expect(aiProviderMock.generate).not.toHaveBeenCalled();
+    expect(JSON.stringify(response.body)).not.toContain("redis://");
+    expect(aiRepositoryMock.recordUsage).toHaveBeenCalledWith(expect.objectContaining({ action: "ai.query.failed", metadata: expect.objectContaining({ resultCategory: "rate_limit_store_unavailable", success: false }) }));
+  });
+});
 
