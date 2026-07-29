@@ -17,10 +17,11 @@ export function Pagination({ page, totalPages, onPageChange, className }: Pagina
     <nav aria-label="Pagination" className={cn("flex items-center gap-2", className)}>
       <Button aria-label="Previous page" size="icon" variant="neutral" disabled={page <= 1} onClick={() => onPageChange(page - 1)}><ChevronLeft aria-hidden="true" className="h-4 w-4" /></Button>
       {pages.map((item) => (
-        <Button key={item} aria-current={item === page ? "page" : undefined} variant={item === page ? "primary" : "neutral"} size="sm" onClick={() => onPageChange(item)}>{item}</Button>
+        <Button key={item} aria-label={item === page ? `Page ${item}, current page` : `Go to page ${item}`} aria-current={item === page ? "page" : undefined} variant={item === page ? "primary" : "neutral"} size="sm" onClick={() => onPageChange(item)}>{item}</Button>
       ))}
       <Button aria-label="Next page" size="icon" variant="neutral" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}><ChevronRight aria-hidden="true" className="h-4 w-4" /></Button>
     </nav>
   );
 }
+
 

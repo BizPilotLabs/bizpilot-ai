@@ -151,8 +151,7 @@ export function TaskCommentsSection({ commentCount, taskId }: TaskCommentsSectio
       <CardContent className="grid gap-5">
         {canCreate ? (
           <form className="grid gap-3" onSubmit={(event) => void handleCreate(event)}>
-            <Textarea aria-label="Add a comment" maxLength={5000} placeholder="Share an update or question..." value={content} onChange={(event) => setContent(event.target.value)} />
-            {createError ? <p className="text-sm text-danger" role="alert">{createError}</p> : null}
+            <Textarea aria-label="Add a comment" error={createError ?? undefined} maxLength={5000} placeholder="Share an update or question..." value={content} onChange={(event) => setContent(event.target.value)} />
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs text-muted-foreground">Plain text only. Line breaks are preserved.</p>
               <Button disabled={createComment.isPending || content.trim().length === 0} isLoading={createComment.isPending} type="submit">Post comment</Button>
@@ -160,7 +159,7 @@ export function TaskCommentsSection({ commentCount, taskId }: TaskCommentsSectio
           </form>
         ) : <p className="text-sm text-muted-foreground">You can view comments, but you do not have permission to add one.</p>}
 
-        {commentsQuery.isLoading ? <div className="grid gap-3"><Skeleton className="h-24" /><Skeleton className="h-24" /></div> : null}
+        {commentsQuery.isLoading ? <div className="grid gap-3" role="status" aria-label="Loading comments"><Skeleton className="h-24" /><Skeleton className="h-24" /></div> : null}
         {commentsQuery.isError ? (
           <div className="rounded-xl border border-danger/20 bg-danger/10 p-4 text-sm text-danger" role="alert">
             <p>{getCommentErrorMessage(commentsQuery.error)}</p>
@@ -193,8 +192,7 @@ export function TaskCommentsSection({ commentCount, taskId }: TaskCommentsSectio
                       </div>
                       {isEditing ? (
                         <div className="grid gap-3">
-                          <Textarea autoFocus aria-label="Edit comment" maxLength={5000} value={editContent} onChange={(event) => setEditContent(event.target.value)} />
-                          {editError ? <p className="text-sm text-danger" role="alert">{editError}</p> : null}
+                          <Textarea autoFocus aria-label="Edit comment" error={editError ?? undefined} maxLength={5000} value={editContent} onChange={(event) => setEditContent(event.target.value)} />
                           <div className="flex justify-end gap-2">
                             <Button disabled={updateComment.isPending} size="sm" type="button" variant="neutral" onClick={cancelEditing}>Cancel</Button>
                             <Button disabled={updateComment.isPending || editContent.trim().length === 0} isLoading={updateComment.isPending} size="sm" type="button" onClick={() => void handleUpdate(comment)}>Save</Button>
@@ -227,3 +225,4 @@ export function TaskCommentsSection({ commentCount, taskId }: TaskCommentsSectio
     </Card>
   );
 }
+

@@ -105,6 +105,57 @@ describe("CommentService", () => {
     expect(commentRepositoryMock.softDeleteComment).toHaveBeenCalledWith(expect.objectContaining({ actorUserId: ids.adminUser, commentId }));
   });
 
+  it("allows Owner to update another user's comment", async () => {
+    commentRepositoryMock.findRequester.mockResolvedValue({ id: ids.ownerUser, roles: [{ role: { name: "Owner", deletedAt: null } }] });
+
+    const result = await commentService.updateComment({
+      organizationId: ids.organizationA,
+      actorUserId: ids.ownerUser,
+      commentId,
+      data: { content: "Owner moderation update." },
+      metadata: { ipAddress: undefined, userAgent: undefined }
+    });
+
+    expect(result.edited).toBe(true);
+    expect(commentRepositoryMock.updateComment).toHaveBeenCalledWith(expect.objectContaining({ actorUserId: ids.ownerUser, commentId }));
+  });
+
+  it("allows a comment author to delete their own comment without requester lookup", async () => {
+    await commentService.deleteComment({
+      organizationId: ids.organizationA,
+      actorUserId: ids.memberUser,
+      commentId,
+      metadata: { ipAddress: undefined, userAgent: undefined }
+    });
+
+    expect(commentRepositoryMock.findRequester).not.toHaveBeenCalled();
+    expect(commentRepositoryMock.softDeleteComment).toHaveBeenCalledWith(expect.objectContaining({ actorUserId: ids.memberUser, commentId }));
+  });
+
+  it("does not allow Manager to moderate comments by role name alone", async () => {
+    commentRepositoryMock.findRequester.mockResolvedValue({ id: ids.targetUser, roles: [{ role: { name: "Manager", deletedAt: null } }] });
+
+    await expect(commentService.deleteComment({
+      organizationId: ids.organizationA,
+      actorUserId: ids.targetUser,
+      commentId,
+      metadata: { ipAddress: undefined, userAgent: undefined }
+    })).rejects.toMatchObject<AppError>({ code: "COMMENT_PERMISSION_DENIED" });
+  });
+
+  it("rejects updates when the comment is missing, cross-tenant or deleted", async () => {
+    commentRepositoryMock.findCommentByIdInOrganization.mockResolvedValue(null);
+
+    await expect(commentService.updateComment({
+      organizationId: ids.organizationB,
+      actorUserId: ids.memberUser,
+      commentId,
+      data: { content: "Invisible comment." },
+      metadata: { ipAddress: undefined, userAgent: undefined }
+    })).rejects.toMatchObject<AppError>({ code: "COMMENT_NOT_FOUND" });
+
+    expect(commentRepositoryMock.updateComment).not.toHaveBeenCalled();
+  });
   it("rejects non-author updates without Owner or Admin moderation", async () => {
     commentRepositoryMock.findRequester.mockResolvedValue({ id: ids.targetUser, roles: [{ role: { name: "Member", deletedAt: null } }] });
 

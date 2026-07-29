@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it, vi } from "vitest";
@@ -72,7 +72,7 @@ describe("TaskCommentsSection", () => {
     expect(screen.queryByText("removed@example.com")).not.toBeInTheDocument();
   });
 
-  it("validates and posts a new plain-text comment", async () => {
+  it("validates, links textarea errors and posts a new plain-text comment", async () => {
     const user = userEvent.setup();
     const createHandler = vi.fn(async () => HttpResponse.json({ success: true, data: { comment: createComment({ content: "New update" }) } }, { status: 201 }));
     mockComments([]);
@@ -83,14 +83,21 @@ describe("TaskCommentsSection", () => {
     await user.type(screen.getByLabelText("Add a comment"), "   ");
     expect(screen.getByRole("button", { name: "Post comment" })).toBeDisabled();
 
-    await user.clear(screen.getByLabelText("Add a comment"));
-    await user.type(screen.getByLabelText("Add a comment"), "New update");
+    fireEvent.change(screen.getByLabelText("Add a comment"), { target: { value: "x".repeat(5001) } });
+    await user.click(screen.getByRole("button", { name: "Post comment" }));
+    const textarea = screen.getByLabelText("Add a comment");
+    const errorId = textarea.getAttribute("aria-describedby");
+    expect(textarea).toHaveAttribute("aria-invalid", "true");
+    expect(document.getElementById(errorId ?? "")).toHaveTextContent("Comment must be 5,000 characters or fewer.");
+
+    await user.clear(textarea);
+    await user.type(textarea, "New update");
     await user.click(screen.getByRole("button", { name: "Post comment" }));
 
     await waitFor(() => expect(createHandler).toHaveBeenCalledTimes(1));
   });
 
-  it("edits an owned comment", async () => {
+  it("edits an owned comment from the keyboard-operable action menu", async () => {
     const user = userEvent.setup();
     const updateHandler = vi.fn(async () => HttpResponse.json({ success: true, data: { comment: createComment({ content: "Edited update", edited: true }) } }));
     mockComments([createComment()]);
@@ -99,7 +106,7 @@ describe("TaskCommentsSection", () => {
     renderWithProviders(<TaskCommentsSection commentCount={1} taskId={taskId} />, { permissions });
 
     await user.click(await screen.findByRole("button", { name: "Comment actions" }));
-    await user.click(screen.getByRole("menuitem", { name: /Edit/ }));
+    await user.keyboard("{Tab}{Enter}");
     await user.clear(screen.getByLabelText("Edit comment"));
     await user.type(screen.getByLabelText("Edit comment"), "Edited update");
     await user.click(screen.getByRole("button", { name: "Save" }));
@@ -107,7 +114,7 @@ describe("TaskCommentsSection", () => {
     await waitFor(() => expect(updateHandler).toHaveBeenCalledTimes(1));
   });
 
-  it("soft deletes an owned comment after confirmation", async () => {
+  it("soft deletes an owned comment from an accessible confirmation dialog", async () => {
     const user = userEvent.setup();
     const deleteHandler = vi.fn(() => HttpResponse.json({ success: true, data: { deleted: true } }));
     mockComments([createComment()]);
@@ -117,12 +124,12 @@ describe("TaskCommentsSection", () => {
 
     await user.click(await screen.findByRole("button", { name: "Comment actions" }));
     await user.click(screen.getByRole("menuitem", { name: /Delete/ }));
-    expect(screen.getByRole("heading", { name: "Delete Comment" })).toBeInTheDocument();
-    const dialog = screen.getByRole("dialog");
+    const dialog = screen.getByRole("dialog", { name: "Delete Comment" });
+    expect(dialog).toHaveAccessibleDescription("Are you sure you want to delete this comment? This action cannot be undone.");
+    expect(within(dialog).getByRole("button", { name: "Delete comment" })).not.toHaveFocus();
     await user.click(within(dialog).getByRole("button", { name: "Delete comment" }));
 
     await waitFor(() => expect(deleteHandler).toHaveBeenCalledTimes(1));
   });
 });
-
 
